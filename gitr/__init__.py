@@ -47,8 +47,35 @@ Options:
     --rm             Remove a hook by name
 """
 
+import docopt
+import pdb
+import sys
+
 import version
 
 __author__ = 'Tom Barron'
 __email__ = 'tusculum@gmail.com'
 __version__ = version.__version__
+
+# -----------------------------------------------------------------------------
+def main():
+    """Entrypoint
+    """
+    o = docopt.docopt(sys.modules[__name__].__doc__)
+    if o['--debug'] or o['-d']:
+        pdb.set_trace()
+
+    if o['--version']:
+        sys.exit(version.__version__)
+
+    for k in (_ for _ in o.keys() if _[0] not in ('-', '<') and o[_]):
+        f = getattr(sys.modules[__name__], "_".join(['gitr', k]))
+        f(sys.argv[2:])
+
+
+# -----------------------------------------------------------------------------
+def gitr_dunn(args):
+    """temporary entrypoint
+    """
+    print("Git'r Dunn: I dunno, maybe do a commit?")
+    print("This is a temporary test entrypoint. It will become a plugin")

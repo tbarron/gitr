@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from gitr import version
 
 try:
     from setuptools import setup
@@ -24,7 +25,7 @@ test_requirements = [
 
 setup(
     name='gitr',
-    version='0.0.0',
+    version=version.__version__,
     description="git helpers",
     long_description=readme + '\n\n' + history,
     author="Tom Barron",
@@ -53,5 +54,6 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
+    entry_points = {'console_scripts': ["gitr = gitr:main"]},
 )
