@@ -63,8 +63,57 @@ def test_docopt_help(capsys):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.parametrize("argd", (({"--version": True}), 
-                                  ({"--debug": True, 'dunn': True}),
+@pytest.mark.parametrize("argd", ({"--version": True, "flix": True}, 
+                                  {"--debug": True},
+                                  {"dunn": True,
+                                   "<hookname>": 'pre-commit.ver'},
+                                  {"depth": True,},
+                                  {"hook": True,
+                                   "--list": True,
+                                   "<filename>": 'froobob'},
+                                  {"hook": True,
+                                   "--show": True,
+                                   "<filename>": 'froobob'},
+                                  {"hook": True, "--add": True,},
+                                  {"hook": True, "--rm": True,},
+                                  {"bv": True, "--version": True},
+                                  {"flix": True, "<hookname>": 'summer'},
+                                  {"nodoc": True, "--version": True},
+                                  {"dupl": True, "--version": True},
+                                  ))
+def test_docopt_raises(argd, capsys):
+    """
+    Test calls to docopt.docopt() that should be successful
+    """
+    pytest.dbgfunc()
+    exp = docopt_exp(**argd)
+    with pytest.raises(docopt.DocoptExit) as e:
+        r = docopt.docopt(gitr.__doc__, argd.keys())
+    assert 'Usage:' in str(e)
+
+
+# -----------------------------------------------------------------------------
+@pytest.mark.parametrize("argd", ({"--version": True}, 
+                                  {'dunn': True, "--debug": True},
+                                  {'dunn': True,},
+                                  {'depth': True, "--debug": True,
+                                   '<commitish>': 'HEAD~7',},
+                                  {'hook': True, '--list': True},
+                                  {'hook': True, '--show': True},
+                                  {'hook': True, '--add': True,
+                                   '<hookname>': 'bobble-dee-boop'},
+                                  {'hook': True, '--rm': True,
+                                   '<hookname>': 'bobble-dee-boop'},
+                                  {'bv': True, '-d': True,
+                                   '<part>': 'patch'},
+                                  {'bv': True, '-d': True,},
+                                  {'flix': True, '-d': True,
+                                   '<filename>': 'foobar'},
+                                  {'flix': True, '-d': True,},
+                                  {'nodoc': True, "--debug": True},
+                                  {'nodoc': True,},
+                                  {'dupl': True, "--debug": True},
+                                  {'dupl': True,},
                                   ))
 def test_docopt(argd, capsys):
     """
@@ -72,7 +121,13 @@ def test_docopt(argd, capsys):
     """
     pytest.dbgfunc()
     exp = docopt_exp(**argd)
-    r = docopt.docopt(gitr.__doc__, argd.keys())
+    argl = []
+    for k in argd:
+        if argd[k] == True:
+            argl.append(k)
+        elif argd[k] is not None:
+            argl.append(argd[k])
+    r = docopt.docopt(gitr.__doc__, argl)
     assert r == exp
 
 

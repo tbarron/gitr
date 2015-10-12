@@ -12,7 +12,7 @@ gitr
 git helpers
 
 * Free software: ISC license
-* Documentation: https://gitr.readthedocs.org.
+* Documentation: https://gitr.readthedocs.org (coming eventually)
 
 Features
 --------
