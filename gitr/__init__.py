@@ -96,13 +96,6 @@ def gitr_bv(opts):
 
     If multiple matches are found, only the first is updated
     """
-    def strinc(sn):
-        """
-        Increment a numeric string or blow up
-        """
-        return str(int(sn) + 1)
-
-    print opts
     tl = []
     target = opts.get('<filename>', 'version.py')
     for r,d,f in os.walk('.'):
