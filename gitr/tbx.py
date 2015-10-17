@@ -22,16 +22,21 @@ def chdir(target):
 
 
 # -----------------------------------------------------------------------------
-def contents(path, type=None):
+def contents(path, type=None, default=None):
     """
     Return the contents of file *path* as *type* (string [default], or list)
     """
-    rv = []
-    with open(path, 'r') as f:
-        if type[0] == 'l':
-            rv = f.readlines()
+    try:
+        with open(path, 'r') as f:
+            if type == list:
+                rv = f.readlines()
+            else:
+                rv = f.read()
+    except IOError as e:
+        if default:
+            rv = default
         else:
-            rv = f.read()
+            raise
     return rv
 
 
