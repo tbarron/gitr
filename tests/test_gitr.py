@@ -8,8 +8,10 @@ test_gitr
 Tests for `gitr` module.
 """
 import docopt
+import os
 import pexpect
 import pytest
+import setuptools
 import shlex
 import subprocess
 import unittest
@@ -20,7 +22,254 @@ from gitr import tbx
 
 
 # -----------------------------------------------------------------------------
+def test_bv_nofile_noarg(tmpdir):
     """
+    pre: nothing
+    gitr bv
+    post: exception('version.py not found')
+    """
+    pytest.dbgfunc()
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True})
+    assert 'version.py not found' in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_noarg_3(tmpdir):
+    """
+    pre: 2.7.3 in version.py
+    gitr bv
+    post: 2.7.3.1 in version.py
+    """
+    pytest.dbgfunc()
+    vpath = tmpdir.join('version.py')
+    vpath.write('__version__ = "2.7.3"\n')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True})
+    r = vpath.read()
+    assert '2.7.3.1' in r
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_noarg_4(tmpdir):
+    """
+    pre: 2.7.3.8 in version.py
+    gitr bv
+    post: 2.7.3.9 in version.py
+    """
+    pytest.dbgfunc()
+    vpath = tmpdir.join('version.py')
+    vpath.write('__version__ = "2.7.3.8"\n')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True})
+    r = vpath.read()
+    assert '2.7.3.9' in r
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_fnarg(tmpdir):
+    """
+    pre: nothing
+    gitr bv a/b/flotsam
+    post: '0.0.0' in a/b/flotsam
+    """
+    pytest.dbgfunc()
+    dpath = tmpdir.join('a/b')
+    dpath.ensure(dir=True)
+    bvpath = dpath.join('flotsam')
+    assert not os.path.exists(bvpath.strpath)
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '<path>': bvpath.strpath})
+    assert os.path.exists(bvpath.strpath)
+    assert '0.0.0' in tbx.contents(bvpath.strpath)
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_major(tmpdir):
+    """
+    pre: nothing
+    gitr bv --major
+    post: exception('version.py not found')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_major_fn(tmpdir):
+    """
+    pre: nothing
+    gitr bv --major frooble
+    post: exception('frooble not found')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_major_3(tmpdir):
+    """
+    pre: '7.4.3' in version.py
+    gitr bv --major
+    post: '8.0.0' in version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_major_3_fn(tmpdir):
+    """
+    pre: '7.4.3' in splack
+    gitr bv --major splack
+    post: '8.0.0' in splack
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_major_3_fn(tmpdir):
+    """
+    pre: '7.4.3' in splack
+    gitr bv --major flump
+    post: exception('flump not found')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_major_4(tmpdir):
+    """
+    pre: '1.0.0.17' in version.py
+    gitr bv --major
+    post: '2.0.0' in version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_minor(tmpdir):
+    """
+    pre: nothing
+    gitr bv --minor
+    post: exception('version.py not found')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_minor_3(tmpdir):
+    """
+    pre: '3.3.2' in version.py
+    gitr bv --minor
+    post: '3.4.0' in version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_minor_4(tmpdir):
+    """
+    pre: '3.3.2.7' in version.py
+    gitr bv --minor
+    post: '3.4.0' in version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_minor_3_fn(tmpdir):
+    """
+    pre: '3.3.2' in foo/bar/setup.py
+    gitr bv --minor foo/bar/setup.py
+    post: '3.4.0' in foo/bar/setup.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_minor_4_fn(tmpdir):
+    """
+    pre: '3.3.2.7' in version.py
+    gitr bv --minor frockle
+    post: '3.3.2.7' in version.py, exception('frockle not found')
+    """
+    pytest.fail('construction')
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_patch(tmpdir):
+    """
+    pre: nothing
+    gitr bv --patch
+    post: exception('version.py not found')
+    """
+    pytest.fail('construction')
+
+# -----------------------------------------------------------------------------
+def test_bv_file_patch_3(tmpdir):
+    """
+    pre: '1.3.2' in version.py
+    gitr bv --patch
+    post: '1.3.3' in version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_patch_4(tmpdir):
+    """
+    pre: '1.3.2.7' in version.py
+    gitr bv --patch
+    post: '1.3.3' in version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_build(tmpdir):
+    """
+    Should raise exception
+    pre: nothing
+    gitr bv --build
+    post: exception('version.py not found')
+    """
+    pytest.fail('construction')
+
+# -----------------------------------------------------------------------------
+def test_bv_file_build_3_fn(tmpdir):
+    """
+    pre: '7.8.9' in ./pkg/foobar
+    gitr bv --build ./pkg/foobar
+    post: '7.8.9.1' in ./pkg/foobar
+    """
+    pytest.fail('construction')
+
+# -----------------------------------------------------------------------------
+def test_bv_file_build_4(tmpdir):
+    """
+    pre: '1.2.3.4' in foo/bar/version.py
+    gitr bv --build
+    post: '1.2.3.5' in foo/bar/version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_set_fn(tmpdir):
+    """
+    pre: nothing
+    gitr bv --set 4.3.2 frisbee
+    post: "__version__ = '4.3.2'" in frisbee
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_nofile_set_nofn(tmpdir):
+    """
+    pre: nothing
+    gitr bv --set 1.0.19
+    post: exception('version.py not found; need a file path argument')
+    """
+    pytest.fail('construction')
 
 
 # -----------------------------------------------------------------------------
