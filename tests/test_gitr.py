@@ -38,7 +38,7 @@ def test_docopt_help(capsys):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.parametrize("argd", ({"--version": True, "flix": True}, 
+@pytest.mark.parametrize("argd", ({"--version": True, "flix": True},
                                   {"--debug": True},
                                   {"dunn": True,
                                    "<hookname>": 'pre-commit.ver'},
@@ -68,7 +68,7 @@ def test_docopt_raises(argd, capsys):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.parametrize("argd", ({"--version": True}, 
+@pytest.mark.parametrize("argd", ({"--version": True},
                                   {'dunn': True, "--debug": True},
                                   {'dunn': True,},
                                   {'depth': True, "--debug": True,
