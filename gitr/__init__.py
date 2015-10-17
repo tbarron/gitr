@@ -120,7 +120,23 @@ def gitr_bv(opts):
     except NameError:
         sys.exit("No version found in {} ['{}']".format(target,
                                                         content))
+
     iv = v.split('.')
+    ov = version_increment(iv, opts)
+    version_update(target, ov, iv)
+
+
+# -----------------------------------------------------------------------------
+def version_increment(iv, opts):
+    """
+    Given a version array in *p*, return the incremented value.
+    """
+    def strinc(sn):
+        """
+        Increment a numeric string or blow up
+        """
+        return str(int(sn) + 1)
+
     ov = []
     if opts.get('--major', False):
         ov = [strinc(iv[0]), '0', '0']
@@ -130,12 +146,41 @@ def gitr_bv(opts):
     elif opts.get('--patch', False):
         ov = [iv[0], iv[1], strinc(iv[2])]
     else:
-        ov = iv
+        ov = iv[:]
         if 3 == len(ov):
             ov.append('1')
         elif 4 == len(ov):
             ov = iv[0:3] + [strinc(iv[3])]
         else:
             sys.exit("'{}' is not a recognized version format".format(v))
+    return ov
+
+
+# -----------------------------------------------------------------------------
+def version_update(target, new, old=None):
+    """
+    Given a target path and new version array, write out the new version.
+
+    If target is empty, write one line: '__version__ = '<new>''
+
+    If old is not None, format and find it in target's contents and replace it
+    with the new version.
+
+    If target is not empty and old and is not found, fail and complain.
+    """
+    news = '.'.join(new)
+    c = tbx.contents(target, default='')
     with open(target, 'w') as f:
-        f.write(content.replace(v, '.'.join(ov)))
+        if not old:
+            if not c:
+                f.write("__version__ = '{}'\n".format(news))
+            else:
+                sys.exit("Don't know where to put '{}' in '{}'".format(news, c))
+        else:
+            olds = '.'.join(old)
+            if not c:
+                sys.exit("Can't update '{}' in an empty file".format(olds))
+            elif olds in c:
+                f.write(c.replace(olds, news))
+            else:
+                sys.exit("'{}' not found in '{}'".format(olds, c))
