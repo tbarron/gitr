@@ -20,33 +20,7 @@ from gitr import tbx
 
 
 # -----------------------------------------------------------------------------
-def docopt_exp(**kw):
-    """Default dict expected back from docopt
     """
-    rv = {'--debug': False,
-          '--help': False,
-          '--version': False,
-          '-d': False,
-          'flix': False,
-          '<filename>': None,
-          'nodoc': False,
-          'dunn': False,
-          'depth': False,
-          '<commitish>': None,
-          'bv': False,    # bump version
-          '<part>': None,
-          'hook': False,
-          '--add': False,
-          '<hookname>': None,
-          '--list': False,
-          '--show': False,
-          '--rm': False,
-          'dupl': False
-          }
-    for k in kw:
-        if k in rv:
-            rv[k] = kw[k]
-    return rv
 
 
 # -----------------------------------------------------------------------------
@@ -145,7 +119,33 @@ def test_pydoc_gitr():
 
 
 # -----------------------------------------------------------------------------
+def docopt_exp(**kw):
+    """Default dict expected back from docopt
     """
+    rv = {'--debug': False,
+          '--help': False,
+          '--version': False,
+          '-d': False,
+          'flix': False,
+          '<filename>': None,
+          'nodoc': False,
+          'dunn': False,
+          'depth': False,
+          '<commitish>': None,
+          'bv': False,    # bump version
+          '<part>': None,
+          'hook': False,
+          '--add': False,
+          '<hookname>': None,
+          '--list': False,
+          '--show': False,
+          '--rm': False,
+          'dupl': False
+          }
+    for k in kw:
+        if k in rv:
+            rv[k] = kw[k]
+    return rv
 
 
 # -----------------------------------------------------------------------------
