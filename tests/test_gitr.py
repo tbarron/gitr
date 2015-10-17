@@ -22,6 +22,111 @@ from gitr import tbx
 
 
 # -----------------------------------------------------------------------------
+def test_vu_on_tmt(tmpdir):
+    """
+    old is None, target exists, but is empty
+    exp: write standard version expression to target
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    trg.write('')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.version_update(trg.strpath, ['9', '8', '7'])
+    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
+
+
+# -----------------------------------------------------------------------------
+def test_vu_on_tns(tmpdir):
+    """
+    old is None, target does not exist
+    exp: write standard version expression to target
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.version_update(trg.strpath, ['9', '8', '7'])
+    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
+
+
+# -----------------------------------------------------------------------------
+def test_vu_on_tfl(tmpdir):
+    """
+    old is None, target is not empty
+    exp: 'Don't know where to put '<news>' in '<c>''
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    nov = 'The quick brown fox and all that'
+    trg.write(nov)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.version_update(trg.strpath, ['9', '8', '7'])
+        assert ''.join(["Don't know where to put ",
+                        "'9.8.7' in '{}'".format(nov)]) in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_os_tmt(tmpdir):
+    """
+    old is not None, target is empty
+    exp: 'Can't update '<olds>' in an empty file'
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    oldv = ['9', '8', '6']
+    newv = oldv[0:2] + ['7']
+    trg.write('')
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.version_update(trg.strpath, newv, oldv)
+        assert ''.join(["Can't update ",
+                        "'{}' ".format('.'.join(oldv)),
+                        "in an empty file"]) in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_os_tfl_op(tmpdir):
+    """
+    old is not None, target is not empty, old IS in target, non-standard
+    exp: <olds> replaced with <news> in non-standard expression
+    """
+    pytest.dbgfunc()
+    oldv = ['7', '3', '2', '32']
+    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
+    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
+    trg = tmpdir.join('fooble-de-bar')
+
+    t = '"{}" is the version\n'
+    (pre, post) = (t.format(_) for _ in [os, ns])
+    trg.write(pre)
+    with tbx.chdir(tmpdir.strpath):
+        gitr.version_update(trg.basename, newv, oldv)
+        assert post in tbx.contents(trg.basename)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_os_tfl_onp(tmpdir):
+    """
+    old is not None, target is not empty, old is not in target
+    exp: '<olds>' not found in '<c>'
+    """
+    pytest.dbgfunc()
+    oldv = ['7', '3', '2', '32']
+    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
+    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
+    trg = tmpdir.join('fooble-de-bar')
+
+    t = '"sizzle" is the version'
+    (pre, post) = (t.format(_) for _ in [os, ns])
+    trg.write(pre)
+    exp = "'{}' not found in '{}'".format(os, pre)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.version_update(trg.basename, newv, oldv)
+        assert exp in str(e)
+
+
+# -----------------------------------------------------------------------------
 def test_bv_nofile_noarg(tmpdir):
     """
     pre: nothing
