@@ -16,6 +16,7 @@ import unittest
 
 import gitr
 from gitr import gitr as app
+from gitr import tbx
 
 
 # -----------------------------------------------------------------------------
@@ -144,30 +145,8 @@ def test_pydoc_gitr():
 
 
 # -----------------------------------------------------------------------------
-def run(cmd, input=None):
     """
-    Run *cmd*, optionally passing string *input* to it on stdin, and return
-    what the process writes to stdout
-    """
-    try:
-        p = subprocess.Popen(shlex.split(cmd),
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        if input:
-            p.stdin.write(input)
-        (o, e) = p.communicate()
-        if p.returncode == 0:
-            rval = o
-        else:
-            rval = 'ERR:' + e
-    except OSError as e:
-        if 'No such file or directory' in str(e):
-            rval = 'ERR:' + str(e)
-        else:
-            raise
 
-    return rval
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
