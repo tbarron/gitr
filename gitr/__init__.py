@@ -77,11 +77,11 @@ def main():
 
     for k in (_ for _ in o.keys() if _[0] not in ('-', '<') and o[_]):
         f = getattr(sys.modules[__name__], "_".join(['gitr', k]))
-        f(sys.argv[2:])
+        f(o)
 
 
 # -----------------------------------------------------------------------------
-def gitr_dunn(args):
+def gitr_dunn(opts):
     """temporary entrypoint
     """
     print("Git'r Dunn: I dunno, maybe do a commit?")
