@@ -55,7 +55,9 @@ Arguments
 """
 
 import docopt
+import os
 import pdb
+import re
 import sys
 
 import version
@@ -86,3 +88,54 @@ def gitr_dunn(opts):
     """
     print("Git'r Dunn: I dunno, maybe do a commit?")
     print("This is a temporary test entrypoint. It will become a plugin")
+
+
+# -----------------------------------------------------------------------------
+def gitr_bv(opts):
+    """bv - bump version
+
+    If multiple matches are found, only the first is updated
+    """
+    def strinc(sn):
+        """
+        Increment a numeric string or blow up
+        """
+        return str(int(sn) + 1)
+
+    print opts
+    tl = []
+    target = opts.get('<filename>', 'version.py')
+    for r,d,f in os.walk('.'):
+        if target in f:
+            tl.append(os.path.join(r, target))
+    if tl == []:
+        sys.exit('{} not found'.format(target))
+
+    target = tl[0]
+    with open(target, 'r') as f:
+        content = f.read()
+    q = re.findall('=\s+[\'"](.*)[\'"]', content)
+    try:
+        v = q[0]
+    except NameError:
+        sys.exit("No version found in {} ['{}']".format(target,
+                                                        content))
+    iv = v.split('.')
+    ov = []
+    if opts.get('--major', False):
+        ov = [strinc(iv[0]), '0', '0']
+        ov_final = '.'.join(ov)
+    elif opts.get('--minor', False):
+        ov = [iv[0], strinc(iv[1]), '0']
+    elif opts.get('--patch', False):
+        ov = [iv[0], iv[1], strinc(iv[2])]
+    else:
+        ov = iv
+        if 3 == len(ov):
+            ov.append('1')
+        elif 4 == len(ov):
+            ov = iv[0:3] + [strinc(iv[3])]
+        else:
+            sys.exit("'{}' is not a recognized version format".format(v))
+    with open(target, 'w') as f:
+        f.write(content.replace(v, '.'.join(ov)))
