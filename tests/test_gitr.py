@@ -76,7 +76,6 @@ def test_bv_nofile_fnarg(tmpdir):
     """
     pytest.dbgfunc()
     dpath = tmpdir.join('a/b')
-    dpath.ensure(dir=True)
     bvpath = dpath.join('flotsam')
     assert not os.path.exists(bvpath.strpath)
     with tbx.chdir(tmpdir.strpath):

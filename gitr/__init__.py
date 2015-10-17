@@ -60,6 +60,7 @@ import pdb
 import re
 import sys
 
+import tbx
 import version
 
 __author__ = 'Tom Barron'
@@ -98,13 +99,19 @@ def gitr_bv(opts):
     """
     tl = []
     target = opts.get('<filename>', 'version.py')
-    for r,d,f in os.walk('.'):
-        if target in f:
-            tl.append(os.path.join(r, target))
-    if tl == []:
-        sys.exit('{} not found'.format(target))
+    if not os.path.exists(target):
+        if '/' in target:
+            td = tbx.dirname(target)
+            os.path.makedirs(td)
+            version_update(target, ['0', '0', '0'])
+        else:
+            for r,d,f in os.walk('.'):
+                if target in f:
+                    tl.append(os.path.join(r, target))
+            if tl == []:
+                sys.exit('{} not found'.format(target))
+            target = tl[0]
 
-    target = tl[0]
     with open(target, 'r') as f:
         content = f.read()
     q = re.findall('=\s+[\'"](.*)[\'"]', content)
