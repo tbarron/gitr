@@ -13,7 +13,18 @@ def pytest_addoption(parser):
     # pdb.set_trace()
     parser.addoption("--dbg", action="append", default=[],
                      help="start debugger on named test or all")
+    parser.addoption("--all", action="store_true", default=False,
+                     help="suppress -x, run all tests")
     sys.path.append(os.getcwd())
+
+
+# -----------------------------------------------------------------------------
+def pytest_configure(config):
+    """
+    If --all and -x, turn off -x
+    """
+    if config.option.all and config.option.exitfirst:
+        config.option.exitfirst = False
 
 
 # -----------------------------------------------------------------------------
