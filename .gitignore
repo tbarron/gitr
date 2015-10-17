@@ -1,6 +1,7 @@
 *.py[cod]
 .attic
 .cache
+pytest.ini
 
 # emacs debris, scaffolding
 *~

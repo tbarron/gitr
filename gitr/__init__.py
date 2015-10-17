@@ -16,8 +16,9 @@ Commands:
         (--add), show a list of installed hooks (--show), and remove hooks
         (--rm)
 
-    gitr bv - will bump the version of the current repo, assumed to be in
-        version.py
+    gitr bv - will bump the version of the current repo as set in <path>
+        (default = version.py). Options --major, --minor, --patch, --build
+        (default) determine which component of the version value is bumped
 
     gitr flix - will find and report conflicts
 
@@ -32,8 +33,8 @@ Usage:
     gitr depth [(-d|--debug)] <commitish>
     gitr hook [(-d|--debug)] (--list|--show)
     gitr hook [(-d|--debug)] (--add|--rm) <hookname>
-    gitr bv [(-d|--debug)] [<part>]
-    gitr flix [(-d|--debug)] [<filename>]
+    gitr bv [(-d|--debug)] [(--major|--minor|--patch|--build)] [<path>]
+    gitr flix [(-d|--debug)] [<target>]
     gitr nodoc [(-d|--debug)]
     gitr dupl [(-d|--debug)]
     gitr (-h|--help|--version)
@@ -45,6 +46,12 @@ Options:
     --show           List installed git hooks
     --add            Add a hook by name
     --rm             Remove a hook by name
+
+Arguments
+    <commitish>      which object in the commit chain to check
+    <hookname>       which hook to add or remove
+    <path>           path for version info
+    <target>         which file to examine for conflicts
 """
 
 import docopt
