@@ -33,7 +33,7 @@ def contents(path, type=None, default=None):
             else:
                 rv = f.read()
     except IOError as e:
-        if default:
+        if default is not None:
             rv = default
         else:
             raise
