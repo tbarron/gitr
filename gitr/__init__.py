@@ -152,7 +152,7 @@ def version_increment(iv, opts):
         elif 4 == len(ov):
             ov = iv[0:3] + [strinc(iv[3])]
         else:
-            sys.exit("'{}' is not a recognized version format".format(v))
+            sys.exit("'{}' is not a recognized version format".format(ov))
     return ov
 
 

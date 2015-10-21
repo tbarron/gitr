@@ -127,6 +127,99 @@ def test_vu_os_tfl_onp(tmpdir):
 
 
 # -----------------------------------------------------------------------------
+def test_vi_major():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--major': True}
+    rv = ['8', '0', '0']
+    """
+    pytest.dbgfunc()
+    exp = ['8', '0', '0']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--major': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_minor():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--minor': True}
+    rv = ['7', '20', '0']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '20', '0']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--minor': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_patch():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--patch': True}
+    rv = ['7', '19', '24']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '19', '24']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--patch': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_xbuild():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--build': True}
+    rv = ['7', '19', '23', '1']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '19', '23', '1']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--build': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_ibuild(tmpdir):
+    """
+    iv = ['7', '19', '23', '4']
+    opts = {'--build': True}
+    rv = ['7', '19', '23', '5']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '19', '23', '5']
+    assert exp == gitr.version_increment(['7', '19', '23', '4'],
+                                         {'bv': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_short(tmpdir):
+    """
+    iv = ['7', '19']
+    opts = {'--build': True}
+    sys.exit('7.19' is not a recognized version format)
+    """
+    pytest.dbgfunc()
+    exp = "'7.19' is not a recognized version format"
+    with pytest.raises(SystemExit) as e:
+        res = gitr.version_increment(['7', '19'], {'bv': True})
+        assert exp in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vi_long(tmpdir):
+    """
+    iv = ['7', '19', 'foo', 'sample', 'wokka']
+    opts = {'--build': True}
+    sys.exit('7.19.foo.sample.wokka' is not a recognized version format)
+    """
+    pytest.dbgfunc()
+    exp = "'7.19.foo.sample.wokka' is not a recognized version format"
+    with pytest.raises(SystemExit) as e:
+        res = gitr.version_increment(['7', '19'], {'bv': True})
+        assert exp in str(e)
+
+
+# -----------------------------------------------------------------------------
 def test_bv_nofile_noarg(tmpdir):
     """
     pre: nothing
