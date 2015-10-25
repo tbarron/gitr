@@ -16,6 +16,53 @@ def test_chdir(tmpdir):
 
 
 # -----------------------------------------------------------------------------
+def test_chdir_nosuch(tmpdir):
+    """
+    Test the chdir contextmanager when a non-existent directory is named
+    """
+    pytest.dbgfunc()
+    here = os.getcwd()
+    badtarg = tmpdir.join('nosuch')
+    with pytest.raises(OSError) as e:
+        with tbx.chdir(badtarg.strpath):
+            assert os.getcwd() == tmpdir.strpath
+    assert 'No such file or directory' in str(e)
+    assert os.getcwd() == here
+
+
+# -----------------------------------------------------------------------------
+def test_chdir_isfile(tmpdir):
+    """
+    Test the chdir contextmanager when a file is named
+    """
+    pytest.dbgfunc()
+    here = os.getcwd()
+    thisfile = tmpdir.join('thisfile').ensure()
+    with pytest.raises(OSError) as e:
+        with tbx.chdir(thisfile.strpath):
+            assert os.getcwd() == thisfile.strpath
+    assert 'Not a directory' in str(e)
+    assert os.getcwd() == here
+
+
+# -----------------------------------------------------------------------------
+def test_chdir_perm(tmpdir):
+    """
+    Test the chdir contextmanager when chdir is not allowed
+    """
+    pytest.dbgfunc()
+    here = os.getcwd()
+    thisdir = tmpdir.join('thisdir').ensure(dir=True)
+    thisdir.chmod(0000)
+    with pytest.raises(OSError) as e:
+        with tbx.chdir(thisdir.strpath):
+            assert os.getcwd() == thisfile.strpath
+    assert 'Permission denied' in str(e)
+    thisdir.chmod(0755)
+    assert os.getcwd() == here
+
+
+# -----------------------------------------------------------------------------
 @pytest.fixture
 def contents_setup(tmpdir):
     """
