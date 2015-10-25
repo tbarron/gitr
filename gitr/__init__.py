@@ -98,11 +98,11 @@ def gitr_bv(opts):
     If multiple matches are found, only the first is updated
     """
     tl = []
-    target = opts.get('<filename>', 'version.py')
+    target = opts.get('<path>', 'version.py') or 'version.py'
     if not os.path.exists(target):
         if '/' in target:
             td = tbx.dirname(target)
-            os.path.makedirs(td)
+            os.makedirs(td)
             version_update(target, ['0', '0', '0'])
         else:
             for r,d,f in os.walk('.'):

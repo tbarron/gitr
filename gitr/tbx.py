@@ -43,6 +43,14 @@ def contents(path, type=None, default=None):
 
 
 # -----------------------------------------------------------------------------
+def dirname(path):
+    """
+    Convenience wrapper for os.path.dirname()
+    """
+    return os.path.dirname(path)
+
+
+# -----------------------------------------------------------------------------
 def revnumerate(seq):
     """
     Enumerate a copy of a sequence in reverse as a generator
