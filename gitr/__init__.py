@@ -55,6 +55,7 @@ Arguments
 """
 
 import docopt
+import git
 import os
 import pdb
 import re
@@ -99,6 +100,13 @@ def gitr_bv(opts):
     """
     tl = []
     target = opts.get('<path>', 'version.py') or 'version.py'
+    try:
+        r = git.Repo()
+        s = r.git.status(target, porc=True)
+        if re.findall('M\s+{}'.format(target), s):
+            sys.exit('{} is already bumped'.format(target))
+    except git.InvalidGitRepositoryError:
+        sys.exit('{} is not in a git repo'.format(target))
     if not os.path.exists(target):
         if '/' in target:
             td = tbx.dirname(target)

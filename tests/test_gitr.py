@@ -221,6 +221,20 @@ def test_vi_long(tmpdir):
 
 
 # -----------------------------------------------------------------------------
+def test_bv_norepo(tmpdir):
+    """
+    pre: nothing
+    gitr bv
+    post: exception('version.py not found')
+    """
+    pytest.dbgfunc()
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True})
+    assert 'version.py is not in a git repo' in str(e)
+
+
+# -----------------------------------------------------------------------------
 def test_bv_nofile_noarg(tmpdir):
     """
     pre: nothing
@@ -229,6 +243,7 @@ def test_bv_nofile_noarg(tmpdir):
     """
     pytest.dbgfunc()
     with tbx.chdir(tmpdir.strpath):
+        r = git.Repo.init(tmpdir.strpath)
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True})
     assert 'version.py not found' in str(e)
@@ -244,6 +259,7 @@ def test_bv_file_noarg_3(tmpdir):
     pytest.dbgfunc()
     vpath = tmpdir.join('version.py')
     vpath.write('__version__ = "2.7.3"\n')
+    r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True})
     r = vpath.read()
@@ -260,6 +276,7 @@ def test_bv_file_noarg_4(tmpdir):
     pytest.dbgfunc()
     vpath = tmpdir.join('version.py')
     vpath.write('__version__ = "2.7.3.8"\n')
+    r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True})
     r = vpath.read()
@@ -277,8 +294,10 @@ def test_bv_nofile_fnarg(tmpdir):
     dpath = tmpdir.join('a/b')
     bvpath = dpath.join('flotsam')
     assert not os.path.exists(bvpath.strpath)
+    r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
-        gitr.gitr_bv({'bv': True, '<path>': bvpath.strpath})
+        rpath = os.path.relpath(bvpath.strpath)
+        gitr.gitr_bv({'bv': True, '<path>': rpath})
     assert os.path.exists(bvpath.strpath)
     assert '0.0.0' in tbx.contents(bvpath.strpath)
 
