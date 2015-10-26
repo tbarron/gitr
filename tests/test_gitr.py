@@ -8,6 +8,7 @@ test_gitr
 Tests for `gitr` module.
 """
 import docopt
+import git
 import os
 import pexpect
 import pytest
@@ -300,6 +301,97 @@ def test_bv_nofile_major_fn(tmpdir):
     post: exception('frooble not found')
     """
     pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+@pytest.fixture
+def already_setup(tmpdir, request):
+    """
+    Setup for 'already_staged' tests
+    """
+    pytest.this = {}
+    rname = request.function.__name__
+    target = {'test_bv_already_staged_default': 'version.py',
+              'test_bv_already_staged_explicit': 'boodle',
+              'test_bv_already_bumped_default': 'version.py',
+              'test_bv_already_bumped_explicit': 'frobnicate'}[rname]
+    pytest.this['target'] = target
+    t = tmpdir.join(target)
+    with tbx.chdir(tmpdir.strpath):
+        # init the repo
+        r = git.Repo.init(tmpdir.strpath)
+        # create the first target and commit it
+        t.write('__version__ = "0.0.0"\n')
+        r.git.add(target)
+        r.git.commit(a=True, m='First commit')
+        # update target and stage the update
+        t.write('__version__ = "0.0.0.1"\n')
+        if 'staged' in rname:
+            r.git.add(target)
+
+
+# -----------------------------------------------------------------------------
+def test_bv_already_bumped_default(tmpdir, already_setup):
+    """
+    If 'version.py' is already staged, don't update it
+    """
+    pytest.dbgfunc()
+    v = pytest.this['target']
+    with tbx.chdir(tmpdir.strpath):
+        pre = tbx.contents(v)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': None})
+        post = tbx.contents(v)
+    assert '{} is already bumped'.format(v) in str(e)
+    assert pre == post
+
+
+# -----------------------------------------------------------------------------
+def test_bv_already_bumped_explicit(tmpdir, already_setup):
+    """
+    If an explicit target is already staged, don't update it
+    """
+    pytest.dbgfunc()
+    v = pytest.this['target']
+    with tbx.chdir(tmpdir.strpath):
+        pre = tbx.contents(v)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': v})
+        post = tbx.contents(v)
+    assert '{} is already bumped'.format(v) in str(e)
+    assert pre == post
+
+
+# -----------------------------------------------------------------------------
+def test_bv_already_staged_default(tmpdir, already_setup):
+    """
+    If 'version.py' is already staged, don't update it
+    """
+    pytest.dbgfunc()
+    v = pytest.this['target']
+    with tbx.chdir(tmpdir.strpath):
+        pre = tbx.contents(v)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': None})
+        post = tbx.contents(v)
+    assert '{} is already bumped'.format(v) in str(e)
+    assert pre == post
+
+
+# -----------------------------------------------------------------------------
+def test_bv_already_staged_explicit(tmpdir, already_setup):
+    """
+    If an explicit target is already staged, don't update it
+    """
+    pytest.dbgfunc()
+    v = pytest.this['target']
+    with tbx.chdir(tmpdir.strpath):
+        pre = tbx.contents(v)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': v})
+        post = tbx.contents(v)
+    assert '{} is already bumped'.format(v) in str(e)
+    assert pre == post
 
 
 # -----------------------------------------------------------------------------
