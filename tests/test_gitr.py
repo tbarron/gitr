@@ -309,7 +309,13 @@ def test_bv_nofile_major(tmpdir):
     gitr bv --major
     post: exception('version.py not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    vname = 'version.py'
+    with tbx.chdir(tmpdir.strpath):
+        r = git.Repo.init(tmpdir.strpath)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '--major': True})
+        assert '{} not found'.format(vname) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -319,7 +325,13 @@ def test_bv_nofile_major_fn(tmpdir):
     gitr bv --major frooble
     post: exception('frooble not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    vname = 'frooble'
+    with tbx.chdir(tmpdir.strpath):
+        r = git.Repo.init(tmpdir.strpath)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '--major': True, '<path>': vname})
+        assert '{0} not found'.format(vname) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -414,13 +426,32 @@ def test_bv_already_staged_explicit(tmpdir, already_setup):
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_major_3(tmpdir):
+@pytest.fixture
+def repo_setup(tmpdir):
+    pytest.this = {}
+    r = pytest.this['repo'] = git.Repo.init(tmpdir.strpath)
+    v = pytest.this['vname'] = tmpdir.join('version.py').ensure()
+    o = pytest.this['other'] = tmpdir.join('other_name').ensure()
+    r.git.add(v.strpath, o.strpath)
+    r.git.commit(m='start')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_file_major_3(tmpdir, repo_setup):
     """
     pre: '7.4.3' in version.py
     gitr bv --major
     post: '8.0.0' in version.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    v.write('7.4.3')
+    r.git.commit(a=True, m='set version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--major': True})
+    assert "__version__ = '8.0.0'" in v.read()
+    assert 'M version.py' in r.git.status(porc=True)
 
 
 # -----------------------------------------------------------------------------
@@ -430,7 +461,16 @@ def test_bv_file_major_3_fn(tmpdir):
     gitr bv --major splack
     post: '8.0.0' in splack
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    vname = tmpdir.join('splack')
+    vname.write("__version__ = '7.4.3'")
+    r = git.Repo.init(tmpdir.strpath)
+    r.git.add(vname.strpath)
+    r.git.commit(a=True, m='first commit')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--major': True,
+                      '<path>': os.path.basename(vname.strpath)})
+    assert "__version__ = '8.0.0'" in vname.read()
 
 
 # -----------------------------------------------------------------------------
@@ -440,7 +480,19 @@ def test_bv_nofile_major_3_fn(tmpdir):
     gitr bv --major flump
     post: exception('flump not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    vname = tmpdir.join('splack')
+    aname = tmpdir.join('flump')
+    vname.write("__version__ = '7.4.3'")
+    r = git.Repo.init(tmpdir.strpath)
+    r.git.add(vname.strpath)
+    r.git.commit(a=True, m='first commit')
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '--major': True,
+                          '<path>': os.path.basename(aname.strpath)})
+        assert '{0} not found'.format(os.path.basename(aname.strpath))
+    assert "__version__ = '7.4.3'" in vname.read()
 
 
 # -----------------------------------------------------------------------------
@@ -450,7 +502,16 @@ def test_bv_file_major_4(tmpdir):
     gitr bv --major
     post: '2.0.0' in version.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    vname = tmpdir.join('version.py')
+    vname.write("__version__ = '1.0.0.17'")
+    r = git.Repo.init(tmpdir.strpath)
+    r.git.add(vname.strpath)
+    r.git.commit(a=True, m='first commit')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--major': True,
+                      '<path>': os.path.basename(vname.strpath)})
+    assert "__version__ = '2.0.0'" in vname.read()
 
 
 # -----------------------------------------------------------------------------
@@ -460,7 +521,13 @@ def test_bv_nofile_minor(tmpdir):
     gitr bv --minor
     post: exception('version.py not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    vname = 'version.py'
+    with tbx.chdir(tmpdir.strpath):
+        r = git.Repo.init(tmpdir.strpath)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '--minor': True})
+        assert '{} not found'.format(vname) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -556,6 +623,66 @@ def test_bv_file_build_4(tmpdir):
     pre: '1.2.3.4' in foo/bar/version.py
     gitr bv --build
     post: '1.2.3.5' in foo/bar/version.py
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_major_minor(tmpdir):
+    """
+    pre: nothing
+    gitr bv --major --minor
+    post: exception('--major and --minor are mutually exclusive')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_major_patch(tmpdir):
+    """
+    pre: nothing
+    gitr bv --major --patch
+    post: exception('--major and --patch are mutually exclusive')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_major_build(tmpdir):
+    """
+    pre: nothing
+    gitr bv --major --build
+    post: exception('--major and --build are mutually exclusive')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_minor_patch(tmpdir):
+    """
+    pre: nothing
+    gitr bv --minor --patch
+    post: exception('--minor and --patch are mutually exclusive')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_minor_build(tmpdir):
+    """
+    pre: nothing
+    gitr bv --minor --build
+    post: exception('--minor and --build are mutually exclusive')
+    """
+    pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_bv_patch_build(tmpdir):
+    """
+    pre: nothing
+    gitr bv --patch --build
+    post: exception('--patch and --build are mutually exclusive')
     """
     pytest.fail('construction')
 
