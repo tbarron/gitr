@@ -432,6 +432,8 @@ def repo_setup(tmpdir):
     r = pytest.this['repo'] = git.Repo.init(tmpdir.strpath)
     v = pytest.this['vname'] = tmpdir.join('version.py').ensure()
     o = pytest.this['other'] = tmpdir.join('other_name').ensure()
+    u = pytest.this['untracked'] = tmpdir.join('untracked').ensure()
+    n = pytest.this['nosuch'] = tmpdir.join('nosuch')
     r.git.add(v.strpath, o.strpath)
     r.git.commit(m='start')
 
@@ -450,84 +452,82 @@ def test_bv_file_major_3(tmpdir, repo_setup):
     r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True})
-    assert "__version__ = '8.0.0'" in v.read()
+    assert "8.0.0" in v.read()
     assert 'M version.py' in r.git.status(porc=True)
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_major_3_fn(tmpdir):
+def test_bv_file_major_3_fn(tmpdir, repo_setup):
     """
     pre: '7.4.3' in splack
     gitr bv --major splack
     post: '8.0.0' in splack
     """
     pytest.dbgfunc()
-    vname = tmpdir.join('splack')
-    vname.write("__version__ = '7.4.3'")
-    r = git.Repo.init(tmpdir.strpath)
-    r.git.add(vname.strpath)
-    r.git.commit(a=True, m='first commit')
+    r = pytest.this['repo']
+    o = pytest.this['other']
+    o.write("__version__ = '7.4.3'\n")
+    r.git.commit(a=True, m='set a version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
-                      '<path>': os.path.basename(vname.strpath)})
-    assert "__version__ = '8.0.0'" in vname.read()
+                      '<path>': os.path.basename(o.strpath)})
+    assert "__version__ = '8.0.0'" in o.read()
 
 
 # -----------------------------------------------------------------------------
-def test_bv_nofile_major_3_fn(tmpdir):
+def test_bv_nofile_major_3_fn(tmpdir, repo_setup):
     """
     pre: '7.4.3' in splack
     gitr bv --major flump
     post: exception('flump not found')
     """
     pytest.dbgfunc()
-    vname = tmpdir.join('splack')
-    aname = tmpdir.join('flump')
-    vname.write("__version__ = '7.4.3'")
-    r = git.Repo.init(tmpdir.strpath)
-    r.git.add(vname.strpath)
-    r.git.commit(a=True, m='first commit')
+    r = pytest.this['repo']
+    n = pytest.this['nosuch']
+    o = pytest.this['other']
+    o.write("__version__ = '7.4.3'")
+    r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--major': True,
-                          '<path>': os.path.basename(aname.strpath)})
-        assert '{0} not found'.format(os.path.basename(aname.strpath))
-    assert "__version__ = '7.4.3'" in vname.read()
+                          '<path>': os.path.basename(n.strpath)})
+        assert '{0} not found'.format(os.path.basename(n.strpath))
+    assert "__version__ = '7.4.3'" in o.read()
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_major_4(tmpdir):
+def test_bv_file_major_4(tmpdir, repo_setup):
     """
     pre: '1.0.0.17' in version.py
     gitr bv --major
     post: '2.0.0' in version.py
     """
     pytest.dbgfunc()
-    vname = tmpdir.join('version.py')
-    vname.write("__version__ = '1.0.0.17'")
-    r = git.Repo.init(tmpdir.strpath)
-    r.git.add(vname.strpath)
-    r.git.commit(a=True, m='first commit')
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    v.write("__version__ = '1.0.0.17'")
+    r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
-                      '<path>': os.path.basename(vname.strpath)})
-    assert "__version__ = '2.0.0'" in vname.read()
+                      '<path>': os.path.basename(v.strpath)})
+    assert "__version__ = '2.0.0'" in v.read()
 
 
 # -----------------------------------------------------------------------------
-def test_bv_nofile_minor(tmpdir):
+def test_bv_nofile_minor(tmpdir, repo_setup):
     """
     pre: nothing
     gitr bv --minor
     post: exception('version.py not found')
     """
     pytest.dbgfunc()
-    vname = 'version.py'
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    v.remove()
     with tbx.chdir(tmpdir.strpath):
-        r = git.Repo.init(tmpdir.strpath)
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--minor': True})
-        assert '{} not found'.format(vname) in str(e)
+        assert '{} not found'.format(os.path.basename(v.strpath)) in str(e)
 
 
 # -----------------------------------------------------------------------------
