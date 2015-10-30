@@ -101,17 +101,19 @@ def gitr_bv(opts):
     tl = []
     target = opts.get('<path>', 'version.py') or 'version.py'
     try:
-        r = git.Repo()
-        s = r.git.status(target, porc=True)
+        repo = git.Repo()
+        s = repo.git.status(target, porc=True)
         if re.findall('M\s+{}'.format(target), s):
-            sys.exit('{} is already bumped'.format(target))
+            sys.exit('{0} is already bumped'.format(target))
     except git.InvalidGitRepositoryError:
-        sys.exit('{} is not in a git repo'.format(target))
+        sys.exit('{0} is not in a git repo'.format(target))
     if not os.path.exists(target):
         if '/' in target:
             td = tbx.dirname(target)
-            os.makedirs(td)
+            if not os.path.exists(td):
+                os.makedirs(td)
             version_update(target, ['0', '0', '0'])
+            sys.exit("{0} is not in git -- no diff available".format(target))
         else:
             for r,d,f in os.walk('.'):
                 if target in f:
@@ -135,6 +137,16 @@ def gitr_bv(opts):
     iv = v.split('.')
     ov = version_increment(iv, opts)
     version_update(target, ov, iv)
+    version_diff(repo, target)
+
+
+# -----------------------------------------------------------------------------
+def version_diff(repo, target):
+    """
+    Get the diff of target and write it to stdout
+    """
+    txt = repo.git.diff(target)
+    print(txt)
 
 
 # -----------------------------------------------------------------------------
