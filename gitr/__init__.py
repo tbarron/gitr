@@ -33,7 +33,7 @@ Usage:
     gitr depth [(-d|--debug)] <commitish>
     gitr hook [(-d|--debug)] (--list|--show)
     gitr hook [(-d|--debug)] (--add|--rm) <hookname>
-    gitr bv [(-d|--debug)] [(--major|--minor|--patch|--build)] [<path>]
+    gitr bv [(-d|--debug)] [(-q|--quiet)] [(--major|--minor|--patch|--build)] [<path>]
     gitr flix [(-d|--debug)] [<target>]
     gitr nodoc [(-d|--debug)]
     gitr dupl [(-d|--debug)]
@@ -113,7 +113,11 @@ def gitr_bv(opts):
             if not os.path.exists(td):
                 os.makedirs(td)
             version_update(target, ['0', '0', '0'])
-            sys.exit("{0} is not in git -- no diff available".format(target))
+            if opts.get('-q', False) or opts.get('--quiet', False):
+                msg = ""
+            else:
+                msg = "{0} is not in git -- no diff available".format(target)
+            sys.exit(msg)
         else:
             for r,d,f in os.walk('.'):
                 if target in f:
@@ -137,7 +141,8 @@ def gitr_bv(opts):
     iv = v.split('.')
     ov = version_increment(iv, opts)
     version_update(target, ov, iv)
-    version_diff(repo, target)
+    if not opts.get('-q', False) and not opts.get('--quiet', False):
+        version_diff(repo, target)
 
 
 # -----------------------------------------------------------------------------

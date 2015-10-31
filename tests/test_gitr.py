@@ -284,7 +284,7 @@ def test_bv_file_noarg_3(tmpdir, capsys):
 
 
 # -----------------------------------------------------------------------------
-def test_bv_dir_nofile(tmpdir, capsys):
+def test_bv_dir_nofile(tmpdir):
     """
     pre: '/' in target; dirname(target) exists; target does not
     gitr bv <target-path>
@@ -498,12 +498,13 @@ def test_bv_file_major_3(tmpdir, capsys, repo_setup):
     v.write('7.4.3')
     r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
-        gitr.gitr_bv({'bv': True, '--major': True})
+        gitr.gitr_bv({'bv': True, '--major': True, '--quiet': True})
     assert "8.0.0" in v.read()
     assert 'M version.py' in r.git.status(porc=True)
     o, e = capsys.readouterr()
-    assert "-7.4.3" in o
-    assert "+8.0.0" in o
+    assert o.strip() == ""
+#     assert "-7.4.3" in o
+#     assert "+8.0.0" in o
 
 
 # -----------------------------------------------------------------------------
@@ -597,9 +598,9 @@ def test_bv_file_minor_3(tmpdir, capsys, repo_setup):
     v.write("__version__ = '3.3.2'\n")
     r.git.commit(a=True, m='first version')
     with tbx.chdir(tmpdir.strpath):
-        gitr.gitr_bv({'bv': True, '--minor': True})
-        bv_verify_diff("__version__ = '{}'", "3.3.2", "3.4.0",
-                       capsys.readouterr())
+        gitr.gitr_bv({'bv': True, '--minor': True, '-q': True})
+        o, e = capsys.readouterr()
+        assert o.strip() == ""
     assert "__version__ = '3.4.0'" in v.read()
 
 
