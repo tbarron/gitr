@@ -269,18 +269,16 @@ def test_bv_file_noarg_3(tmpdir, capsys):
     post: 2.7.3.1 in version.py
     """
     pytest.dbgfunc()
+    pre, post = ('2.7.3', '2.7.3.1')
     vpath = tmpdir.join('version.py')
-    vpath.write('__version__ = "2.7.3"\n')
+    vpath.write("__version__ = '{0}'\n".format(pre))
     r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
         r.git.add(vpath.basename)
         r.git.commit(m='inception')
         gitr.gitr_bv({'bv': True})
-        bv_verify_diff('__version__ = "{}"',
-                       '2.7.3',
-                       '2.7.3.1',
-                       capsys.readouterr())
-    assert '2.7.3.1' in vpath.read()
+        bv_verify_diff("__version__ = '{}'", pre, post, capsys.readouterr())
+    assert post in vpath.read()
 
 
 # -----------------------------------------------------------------------------
@@ -312,19 +310,16 @@ def test_bv_file_noarg_4(tmpdir, capsys):
     post: 2.7.3.9 in version.py
     """
     pytest.dbgfunc()
+    pre, post = ('2.7.3.8', '2.7.3.9')
     vpath = tmpdir.join('version.py')
-    vpath.write('__version__ = "2.7.3.8"\n')
+    vpath.write("__version__ = '{0}'\n".format(pre))
     r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
         r.git.add(vpath.basename)
         r.git.commit(m='inception')
         gitr.gitr_bv({'bv': True})
-        bv_verify_diff('__version__ = "{}"',
-                       "2.7.3.8",
-                       "2.7.3.9",
-                       capsys.readouterr())
-    # z = vpath.read()
-    assert '2.7.3.9' in vpath.read()
+        bv_verify_diff("__version__ = '{}'", pre, post, capsys.readouterr())
+    assert post in vpath.read()
 
 
 # -----------------------------------------------------------------------------
@@ -492,18 +487,17 @@ def test_bv_file_major_3(tmpdir, capsys, repo_setup):
     post: '8.0.0' in version.py
     """
     pytest.dbgfunc()
+    pre, post = '7.4.3', '8.0.0'
     r = pytest.this['repo']
     v = pytest.this['vname']
-    v.write('7.4.3')
+    v.write(pre)
     r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True, '--quiet': True})
-    assert "8.0.0" in v.read()
+    assert post in v.read()
     assert 'M version.py' in r.git.status(porc=True)
     o, e = capsys.readouterr()
     assert o.strip() == ""
-#     assert "-7.4.3" in o
-#     assert "+8.0.0" in o
 
 
 # -----------------------------------------------------------------------------
@@ -516,14 +510,14 @@ def test_bv_file_major_3_fn(tmpdir, capsys, repo_setup):
     pytest.dbgfunc()
     r = pytest.this['repo']
     o = pytest.this['other']
-    o.write("__version__ = '7.4.3'\n")
+    pre, post = "7.4.3", "8.0.0"
+    o.write("__version__ = '{0}'\n".format(pre))
     r.git.commit(a=True, m='set a version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
                       '<path>': o.basename})
-    assert "__version__ = '8.0.0'" in o.read()
-    bv_verify_diff("__version__ = '{0}'", "7.4.3", "8.0.0",
-                   capsys.readouterr())
+    assert "__version__ = '{0}'".format(post) in o.read()
+    bv_verify_diff("__version__ = '{0}'", pre, post, capsys.readouterr())
 
 
 # -----------------------------------------------------------------------------
@@ -534,17 +528,18 @@ def test_bv_nofile_major_3_fn(tmpdir, repo_setup):
     post: exception('flump not found')
     """
     pytest.dbgfunc()
+    pre = post = '7.4.3'
     r = pytest.this['repo']
     n = pytest.this['nosuch']
     o = pytest.this['other']
-    o.write("__version__ = '7.4.3'")
+    o.write("__version__ = '{0}'".format(pre))
     r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--major': True,
                           '<path>': n.basename})
         assert '{0} not found'.format(n.basename) in str(e)
-    assert "__version__ = '7.4.3'" in o.read()
+    assert "__version__ = '{0}'".format(post) in o.read()
 
 
 # -----------------------------------------------------------------------------
@@ -557,14 +552,14 @@ def test_bv_file_major_4(tmpdir, capsys, repo_setup):
     pytest.dbgfunc()
     r = pytest.this['repo']
     v = pytest.this['vname']
-    v.write("__version__ = '1.0.0.17'")
+    pre, post = '1.0.0.17', '2.0.0'
+    v.write("__version__ = '{0}'".format(pre))
     r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
                       '<path>': v.basename})
-        bv_verify_diff("__version__ = '{}'", '1.0.0.17', '2.0.0',
-                       capsys.readouterr())
-    assert "__version__ = '2.0.0'" in v.read()
+        bv_verify_diff("__version__ = '{}'", pre, post, capsys.readouterr())
+    assert "__version__ = '{0}'".format(post) in v.read()
 
 
 # -----------------------------------------------------------------------------
@@ -592,15 +587,16 @@ def test_bv_file_minor_3(tmpdir, capsys, repo_setup):
     post: '3.4.0' in version.py
     """
     pytest.dbgfunc()
+    pre, post = '3.3.2', '3.4.0'
     r = pytest.this['repo']
     v = pytest.this['vname']
-    v.write("__version__ = '3.3.2'\n")
+    v.write("__version__ = '{0}'\n".format(pre))
     r.git.commit(a=True, m='first version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--minor': True, '-q': True})
         o, e = capsys.readouterr()
         assert o.strip() == ""
-    assert "__version__ = '3.4.0'" in v.read()
+    assert "__version__ = '{0}'".format(post) in v.read()
 
 
 # -----------------------------------------------------------------------------
