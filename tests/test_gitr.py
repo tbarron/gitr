@@ -273,7 +273,7 @@ def test_bv_file_noarg_3(tmpdir, capsys):
     vpath.write('__version__ = "2.7.3"\n')
     r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
-        r.git.add(os.path.basename(vpath.strpath))
+        r.git.add(vpath.basename)
         r.git.commit(m='inception')
         gitr.gitr_bv({'bv': True})
         bv_verify_diff('__version__ = "{}"',
@@ -316,7 +316,7 @@ def test_bv_file_noarg_4(tmpdir, capsys):
     vpath.write('__version__ = "2.7.3.8"\n')
     r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
-        r.git.add(os.path.basename(vpath.strpath))
+        r.git.add(vpath.basename)
         r.git.commit(m='inception')
         gitr.gitr_bv({'bv': True})
         bv_verify_diff('__version__ = "{}"',
@@ -335,17 +335,16 @@ def test_bv_nofile_fnarg(tmpdir):
     post: '0.0.0' in a/b/flotsam
     """
     pytest.dbgfunc()
-    path = 'a/b/flotsam'
-    dpath = tmpdir.join(os.path.dirname(path))
-    bvpath = dpath.join(os.path.basename(path))
-    assert not os.path.exists(bvpath.strpath)
+    dpath = tmpdir.join('a/b')
+    bvpath = dpath.join('flotsam')
+    assert not bvpath.exists()
     r = git.Repo.init(tmpdir.strpath)
     with tbx.chdir(tmpdir.strpath):
-        rpath = os.path.relpath(bvpath.strpath)
+        rpath = bvpath.relto(tmpdir)
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '<path>': rpath})
-        assert '{0} is not in git -- no diff available'.format(path) in str(e)
-    assert os.path.exists(bvpath.strpath)
+        assert '{0} is not in git -- no diff available'.format(rpath) in str(e)
+    assert bvpath.exists()
     assert "'0.0.0'" in bvpath.read()
 
 
@@ -521,7 +520,7 @@ def test_bv_file_major_3_fn(tmpdir, capsys, repo_setup):
     r.git.commit(a=True, m='set a version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
-                      '<path>': os.path.basename(o.strpath)})
+                      '<path>': o.basename})
     assert "__version__ = '8.0.0'" in o.read()
     bv_verify_diff("__version__ = '{0}'", "7.4.3", "8.0.0",
                    capsys.readouterr())
@@ -543,8 +542,8 @@ def test_bv_nofile_major_3_fn(tmpdir, repo_setup):
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--major': True,
-                          '<path>': os.path.basename(n.strpath)})
-        assert '{0} not found'.format(os.path.basename(n.strpath)) in str(e)
+                          '<path>': n.basename})
+        assert '{0} not found'.format(n.basename) in str(e)
     assert "__version__ = '7.4.3'" in o.read()
 
 
@@ -562,7 +561,7 @@ def test_bv_file_major_4(tmpdir, capsys, repo_setup):
     r.git.commit(a=True, m='set version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
-                      '<path>': os.path.basename(v.strpath)})
+                      '<path>': v.basename})
         bv_verify_diff("__version__ = '{}'", '1.0.0.17', '2.0.0',
                        capsys.readouterr())
     assert "__version__ = '2.0.0'" in v.read()
@@ -582,7 +581,7 @@ def test_bv_nofile_minor(tmpdir, repo_setup):
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--minor': True})
-        assert '{} not found'.format(os.path.basename(v.strpath)) in str(e)
+        assert '{} not found'.format(v.basename) in str(e)
 
 
 # -----------------------------------------------------------------------------
