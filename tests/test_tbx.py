@@ -165,3 +165,96 @@ def test_run_fail():
     r = tbx.run("nosuchbinary")
     assert "ERR:" in r
     assert "No such file or directory" in r
+
+
+# -----------------------------------------------------------------------------
+def test_tmpenv_present():
+    """
+    pre: $TMPENV == 'pre test value'
+    with tmpenv(TMPENV='some other value'):
+        assert os.getenv('TMPENV') == 'some other value'
+    post: $TMPENV == 'pre test value'
+    """
+    pytest.dbgfunc()
+    v, pre, inside = 'TMPENV', 'pre test value', 'some other value'
+    os.environ[v] = pre
+    with tbx.tmpenv(TMPENV=inside):
+        assert inside == os.getenv(v)
+    assert pre == os.getenv(v)
+    del os.environ[v]
+    # pytest.fail('construction')
+
+
+# -----------------------------------------------------------------------------
+def test_tmpenv_absent():
+    """
+    pre: 'TMPENV' not in os.environ
+    with tmpenv(TMPENV='something'):
+        assert os.getenv('TMPENV') == 'something'
+    post: 'TMPENV' not in os.environ
+    """
+    pytest.dbgfunc()
+    v, inside = 'TMPENV', 'something'
+    if v in os.environ:
+        del os.environ[v]
+    with tbx.tmpenv(TMPENV=inside):
+        assert inside == os.getenv(v)
+    assert v not in os.environ
+
+
+# -----------------------------------------------------------------------------
+def test_tmpenv_unset():
+    """
+    pre: $TMPENV == 'pre test value'
+    with tmpenv(TMPENV=None):
+        assert 'TMPENV' not in os.environ
+    post: $TMPENV == 'pre test value'
+    """
+    pytest.dbgfunc()
+    v, pre = 'TMPENV', 'pre test value'
+    os.environ[v] = pre
+    with tbx.tmpenv(TMPENV=None):
+        assert v not in os.environ
+    assert pre == os.getenv(v)
+    del os.environ[v]
+
+
+# -----------------------------------------------------------------------------
+def test_tmpenv_mult():
+    """
+    pre: $TMPENV undefined, TMPENV_OTHER == ''
+    with tmpenv(TMPENV='foobar', OTHER='another value'):
+        assert 'foobar' == os.getenv('TMPENV')
+        assert 'another value' == os.getenv('OTHER')
+    post: $TMPENV == 'pre test value', OTHER undefined
+    """
+    pytest.dbgfunc()
+    v, o, pre, i1, i2 = 'TMPENV', 'TMPENV_OTHER', 'some value', 'good', 'best'
+    os.environ[o] = pre
+    if v in os.environ:
+        del os.environ[v]
+    with tbx.tmpenv(TMPENV=i1, TMPENV_OTHER=i2):
+        assert i1 == os.getenv(v)
+        assert i2 == os.getenv(o)
+    assert pre == os.getenv(o)
+    assert v not in os.environ
+
+
+# -----------------------------------------------------------------------------
+def test_tmpenv_exception():
+    """
+    pre: $TMPENV == 'some value'
+    with tmpenv(TMPENV='foobar'):
+        assert 'foobar' == os.getenv('TMPENV')
+        raise StandardError('some random error')
+    post: $TMPENV == 'some value'
+    """
+    pytest.dbgfunc()
+    v, pre, dur = 'TMPENV', 'some value', 'good'
+    os.environ[v] = pre
+    with pytest.raises(StandardError):
+        with tbx.tmpenv(TMPENV=dur):
+            assert dur == os.getenv(v)
+            raise StandardError('some random exception')
+    assert pre == os.getenv(v)
+    del os.environ[v]

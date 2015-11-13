@@ -24,6 +24,27 @@ def chdir(target):
 
 
 # -----------------------------------------------------------------------------
+@contextlib.contextmanager
+def tmpenv(**kw):
+    a = {}
+    try:
+        for n in kw:
+            if n in os.environ:
+                a[n] = os.environ[n]
+            if kw[n] is None:
+                del os.environ[n]
+            else:
+                os.environ[n] = kw[n]
+        yield
+    finally:
+        for n in kw:
+            if n in a:
+                os.environ[n] = a[n]
+            elif n in os.environ:
+                del os.environ[n]
+
+
+# -----------------------------------------------------------------------------
 def contents(path, type=None, default=None):
     """
     Return the contents of file *path* as *type* (string [default], or list)
