@@ -74,7 +74,7 @@ def main():
     """Entrypoint
     """
     o = docopt.docopt(sys.modules[__name__].__doc__)
-    if o['--debug'] or o['-d']:
+    if o['--debug']:
         pdb.set_trace()
 
     if o['--version']:
