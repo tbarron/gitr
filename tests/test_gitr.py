@@ -11,6 +11,7 @@ import docopt
 import git
 import os
 import pexpect
+import pydoc
 import pytest
 import setuptools
 import shlex
@@ -80,8 +81,8 @@ def test_vu_os_tmt(tmpdir):
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.version_update(trg.strpath, newv, oldv)
-        assert ''.join(["Can't update ",
-                        "'{}' ".format('.'.join(oldv)),
+        assert ' '.join(["Can't update",
+                        "'{}'".format('.'.join(oldv)),
                         "in an empty file"]) in str(e)
 
 
@@ -200,10 +201,11 @@ def test_vi_short(tmpdir):
     sys.exit('7.19' is not a recognized version format)
     """
     pytest.dbgfunc()
-    exp = "'7.19' is not a recognized version format"
+    inp = ['7', '19']
+    exp = "'{0}' is not a recognized version format".format('.'.join(inp))
     with pytest.raises(SystemExit) as e:
-        res = gitr.version_increment(['7', '19'], {'bv': True})
-        assert exp in str(e)
+        res = gitr.version_increment(inp, {'bv': True})
+    assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -214,10 +216,11 @@ def test_vi_long(tmpdir):
     sys.exit('7.19.foo.sample.wokka' is not a recognized version format)
     """
     pytest.dbgfunc()
-    exp = "'7.19.foo.sample.wokka' is not a recognized version format"
+    inp = ['7', '19', 'foo', 'sample', 'wokka']
+    exp = "'{0}' is not a recognized version format".format('.'.join(inp))
     with pytest.raises(SystemExit) as e:
-        res = gitr.version_increment(['7', '19'], {'bv': True})
-        assert exp in str(e)
+        res = gitr.version_increment(inp, {'bv': True})
+    assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -469,12 +472,42 @@ def test_bv_already_staged_explicit(tmpdir, already_setup):
 # -----------------------------------------------------------------------------
 @pytest.fixture
 def repo_setup(tmpdir):
+    pytest.dbgfunc()
     pytest.this = {}
+    # the git repo
     r = pytest.this['repo'] = git.Repo.init(tmpdir.strpath)
+
+    # a git-tracked file with the default name ('version.py')
     v = pytest.this['vname'] = tmpdir.join('version.py').ensure()
+
+    # a git-tracked file with an alternate name
     o = pytest.this['other'] = tmpdir.join('other_name').ensure()
+
+    # a file not tracked by git
     u = pytest.this['untracked'] = tmpdir.join('untracked').ensure()
+
+    # a file that does not exist
     n = pytest.this['nosuch'] = tmpdir.join('nosuch')
+
+    # __version__ template
+    pytest.this['template'] = "__version__ = '{0}'\n"
+
+    # files in a subdirectory
+    q = {'foo/bar/version.py': {'def': True, 'gt': True, 'exists': True},
+         'foo/bar/other_name': {'def': False, 'gt': True, 'exists': True},
+         'foo/bar/untracked': {'def': False, 'gt': False, 'exists': True},
+         'foo/bar/nosuch': {'def': False, 'gt': False, 'exists': False},}
+    pytest.this['q'] = q
+    for p in q:
+        d = tmpdir.join(os.path.dirname(p))
+        if not d.exists():
+            d.ensure(dir=True)
+        q[p]['locpath'] = d.join(os.path.basename(p))
+        if q[p]['exists']:
+            q[p]['locpath'].ensure()
+        if q[p]['gt']:
+            r.git.add(q[p]['locpath'].strpath)
+
     r.git.add(v.strpath, o.strpath)
     r.git.commit(m='start')
 
@@ -483,8 +516,8 @@ def repo_setup(tmpdir):
 def test_bv_file_major_3(tmpdir, capsys, repo_setup):
     """
     pre: '7.4.3' in version.py
-    gitr bv --major
-    post: '8.0.0' in version.py
+    gitr bv --major --quiet
+    post: '8.0.0' in version.py, nothing on stdout
     """
     pytest.dbgfunc()
     pre, post = '7.4.3', '8.0.0'
@@ -570,13 +603,14 @@ def test_bv_nofile_minor(tmpdir, repo_setup):
     post: exception('version.py not found')
     """
     pytest.dbgfunc()
-    r = pytest.this['repo']
     v = pytest.this['vname']
     v.remove()
+    q = pytest.this['q']
+    q['foo/bar/version.py']['locpath'].remove()
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--minor': True})
-        assert '{} not found'.format(v.basename) in str(e)
+        assert 'version.py not found' in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -600,100 +634,204 @@ def test_bv_file_minor_3(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_minor_4(tmpdir):
+def test_bv_file_minor_4(tmpdir, capsys, repo_setup):
     """
     pre: '3.3.2.7' in version.py
     gitr bv --minor
     post: '3.4.0' in version.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    pre, post = "3.3.2.7", "3.4.0"
+    v.write("__version__ = '{0}'\n".format(pre))
+    r.git.commit(a=True, m='first version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--minor': True})
+        bv_verify_diff("__version__ = '{}'", pre, post,
+                       capsys.readouterr())
+    assert "__version__ = '{0}'".format(post) in v.read()
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_minor_3_fn(tmpdir):
+def test_bv_file_minor_3_fn(tmpdir, capsys, repo_setup):
     """
     pre: '3.3.2' in foo/bar/setup.py
     gitr bv --minor foo/bar/setup.py
     post: '3.4.0' in foo/bar/setup.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    d = tmpdir.join('foo/bar').ensure(dir=True)
+    s = d.join('setup.py')
+    pre, post = "3.3.2", "3.4.0"
+    s.write("__version__ = '{0}'\n".format(pre))
+    r.git.add(s.strpath)
+    r.git.commit(a=True, m='first version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--minor': True,
+                      '<path>': s.relto(tmpdir)})
+        bv_verify_diff("__version__ = '{}'", pre, post,
+                       capsys.readouterr())
+    assert "__version__ = '{0}'".format(post) in s.read()
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_minor_4_fn(tmpdir):
+def test_bv_file_minor_4_fn(tmpdir, repo_setup):
     """
     pre: '3.3.2.7' in version.py
     gitr bv --minor frockle
     post: '3.3.2.7' in version.py, exception('frockle not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    pre, post = "3.3.2.7", "3.4.0"
+    v.write("__version__ = '{0}'\n".format(pre))
+    r.git.commit(a=True, m='first version')
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '--minor': True,
+                          '<path>': 'frockle'})
+        assert 'frockle not found' in str(e)
+
 
 # -----------------------------------------------------------------------------
-def test_bv_nofile_patch(tmpdir):
+def test_bv_nofile_patch(tmpdir, repo_setup):
     """
     pre: nothing
     gitr bv --patch
     post: exception('version.py not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    v = pytest.this['vname']
+    v.remove()
+    q = pytest.this['q']
+    q['foo/bar/version.py']['locpath'].remove()
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'--patch': True})
+        assert '{} not found'.format(v.basename) in str(e)
+
 
 # -----------------------------------------------------------------------------
-def test_bv_file_patch_3(tmpdir):
+def test_bv_file_patch_3(tmpdir, repo_setup, capsys):
     """
     pre: '1.3.2' in version.py
     gitr bv --patch
     post: '1.3.3' in version.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    pre, post = '1.3.2', '1.3.3'
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    v.write("__version__ = '{0}'\n".format(pre))
+    r.git.commit(a=True, m='first version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--patch': True, '-q': True})
+        o, e = capsys.readouterr()
+        assert o.strip() == ""
+    assert "__version__ = '{0}'".format(post) in v.read()
+
 
 
 # -----------------------------------------------------------------------------
-def test_bv_file_patch_4(tmpdir):
+def test_bv_file_patch_4(tmpdir, capsys, repo_setup):
     """
     pre: '1.3.2.7' in version.py
     gitr bv --patch
     post: '1.3.3' in version.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    v = pytest.this['vname']
+    pre, post = "1.3.2.7", "1.3.3"
+    v.write("__version__ = '{0}'\n".format(pre))
+    r.git.commit(a=True, m='first version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--patch': True})
+        bv_verify_diff("__version__ = '{}'", pre, post,
+                       capsys.readouterr())
+    assert "__version__ = '{0}'".format(post) in v.read()
 
 
 # -----------------------------------------------------------------------------
-def test_bv_nofile_build(tmpdir):
+def test_bv_nofile_build(tmpdir, repo_setup):
     """
     Should raise exception
     pre: nothing
     gitr bv --build
     post: exception('version.py not found')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    v = pytest.this['vname']
+    v.remove()
+    q = pytest.this['q']
+    q['foo/bar/version.py']['locpath'].remove()
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'--build': True})
+        assert '{} not found'.format(v.basename) in str(e)
+
 
 # -----------------------------------------------------------------------------
-def test_bv_file_build_3_fn(tmpdir):
+def test_bv_file_build_3_fn(tmpdir, repo_setup):
     """
     pre: '7.8.9' in ./pkg/foobar
     gitr bv --build ./pkg/foobar
     post: '7.8.9.1' in ./pkg/foobar
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    pre, post = '7.8.9', '7.8.9.1'
+    t = pytest.this['template']
+    op = 'foo/bar/other_name'
+    o = pytest.this['q'][op]
+    o['locpath'].write(t.format(pre))
+    r.git.commit(a=True, m='version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'--build': True,
+                      '<path>': op})
+    assert t.format(post) in o['locpath'].read()
+
 
 # -----------------------------------------------------------------------------
-def test_bv_file_build_4(tmpdir):
+def test_bv_file_build_4(tmpdir, capsys, repo_setup):
     """
     pre: '1.2.3.4' in foo/bar/version.py
     gitr bv --build
     post: '1.2.3.5' in foo/bar/version.py
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    r = pytest.this['repo']
+    pytest.this['vname'].remove()
+    vp = 'foo/bar/version.py'
+    v = pytest.this['q'][vp]
+    pre, post = "1.2.3.4", "1.2.3.5"
+    t = pytest.this['template']
+    v['locpath'].write(t.format(pre))
+    r.git.commit(a=True, m='first version')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.gitr_bv({'bv': True, '--build': True})
+        bv_verify_diff(t, pre, post,
+                       capsys.readouterr())
 
 
 # -----------------------------------------------------------------------------
-def test_bv_major_minor(tmpdir):
+def test_bv_major_minor(tmpdir, repo_setup):
     """
     pre: nothing
     gitr bv --major --minor
     post: exception('--major and --minor are mutually exclusive')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    mx_opt1, mx_opt2 = '--major', '--minor'
+    exp = '{0} and {1} are mutually exclusive'.format(mx_opt1, mx_opt2)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({mx_opt1: True, mx_opt2: True})
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -703,7 +841,13 @@ def test_bv_major_patch(tmpdir):
     gitr bv --major --patch
     post: exception('--major and --patch are mutually exclusive')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    mx_opt1, mx_opt2 = '--major', '--patch'
+    exp = '{0} and {1} are mutually exclusive'.format(mx_opt1, mx_opt2)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({mx_opt1: True, mx_opt2: True})
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -713,7 +857,13 @@ def test_bv_major_build(tmpdir):
     gitr bv --major --build
     post: exception('--major and --build are mutually exclusive')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    mx_opt1, mx_opt2 = '--major', '--build'
+    exp = '{0} and {1} are mutually exclusive'.format(mx_opt1, mx_opt2)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({mx_opt1: True, mx_opt2: True})
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -723,7 +873,13 @@ def test_bv_minor_patch(tmpdir):
     gitr bv --minor --patch
     post: exception('--minor and --patch are mutually exclusive')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    mx_opt1, mx_opt2 = '--minor', '--patch'
+    exp = '{0} and {1} are mutually exclusive'.format(mx_opt1, mx_opt2)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({mx_opt1: True, mx_opt2: True})
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -733,7 +889,13 @@ def test_bv_minor_build(tmpdir):
     gitr bv --minor --build
     post: exception('--minor and --build are mutually exclusive')
     """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    mx_opt1, mx_opt2 = '--minor', '--build'
+    exp = '{0} and {1} are mutually exclusive'.format(mx_opt1, mx_opt2)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({mx_opt1: True, mx_opt2: True})
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -743,27 +905,13 @@ def test_bv_patch_build(tmpdir):
     gitr bv --patch --build
     post: exception('--patch and --build are mutually exclusive')
     """
-    pytest.fail('construction')
-
-
-# -----------------------------------------------------------------------------
-def test_bv_nofile_set_fn(tmpdir):
-    """
-    pre: nothing
-    gitr bv --set 4.3.2 frisbee
-    post: "__version__ = '4.3.2'" in frisbee
-    """
-    pytest.fail('construction')
-
-
-# -----------------------------------------------------------------------------
-def test_bv_nofile_set_nofn(tmpdir):
-    """
-    pre: nothing
-    gitr bv --set 1.0.19
-    post: exception('version.py not found; need a file path argument')
-    """
-    pytest.fail('construction')
+    pytest.dbgfunc()
+    mx_opt1, mx_opt2 = '--patch', '--build'
+    exp = '{0} and {1} are mutually exclusive'.format(mx_opt1, mx_opt2)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({mx_opt1: True, mx_opt2: True})
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -795,7 +943,8 @@ def test_docopt_help(capsys):
                                   {"hook": True, "--add": True,},
                                   {"hook": True, "--rm": True,},
                                   {"bv": True, "--version": True},
-                                  {"flix": True, "<hookname>": 'summer'},
+                                  {"flix": True, "--minor": True,
+                                   "<hookname>": 'summer'},
                                   {"nodoc": True, "--version": True},
                                   {"dupl": True, "--version": True},
                                   ))
@@ -805,8 +954,9 @@ def test_docopt_raises(argd, capsys):
     """
     pytest.dbgfunc()
     exp = docopt_exp(**argd)
+    argl = docopt_cmdl(argd)
     with pytest.raises(docopt.DocoptExit) as e:
-        r = docopt.docopt(gitr.__doc__, argd.keys())
+        r = docopt.docopt(gitr.__doc__, argl)
     assert 'Usage:' in str(e)
 
 
@@ -823,10 +973,10 @@ def test_docopt_raises(argd, capsys):
                                   {'hook': True, '--rm': True,
                                    '<hookname>': 'bobble-dee-boop'},
                                   {'bv': True, '-d': True,
-                                   '<part>': 'patch'},
-                                  {'bv': True, '-d': True,},
+                                   '<path>': 'patch'},
+                                  {'bv': True, '--debug': True,},
                                   {'flix': True, '-d': True,
-                                   '<filename>': 'foobar'},
+                                   '<target>': 'foobar'},
                                   {'flix': True, '-d': True,},
                                   {'nodoc': True, "--debug": True},
                                   {'nodoc': True,},
@@ -839,26 +989,50 @@ def test_docopt(argd, capsys):
     """
     pytest.dbgfunc()
     exp = docopt_exp(**argd)
-    argl = []
-    for k in argd:
-        if argd[k] == True:
-            argl.append(k)
-        elif argd[k] is not None:
-            argl.append(argd[k])
+    argl = docopt_cmdl(argd)
     r = docopt.docopt(gitr.__doc__, argl)
     assert r == exp
 
 
 # -----------------------------------------------------------------------------
-def test_pydoc_gitr():
+def test_pydoc_gitr(capsys):
     """
     Verify the behavior of running 'pydoc gitr'
     """
     pytest.dbgfunc()
-    r = run("pydoc gitr")
+    pydoc.help(gitr)
+    o, e = capsys.readouterr()
     z = docopt_exp()
     for k in z:
-        assert k in r
+        assert k in o
+
+
+# -----------------------------------------------------------------------------
+def docopt_subcl():
+    """
+    Compute the list of sub-commands from the output of docopt_exp
+    """
+    exp = docopt_exp()
+    rv = [z for z in exp.keys() if '-' not in z and '<' not in z]
+    return rv
+
+
+# -----------------------------------------------------------------------------
+def docopt_cmdl(argd):
+    """
+    Given a set of arguments, construct a command line
+    """
+    argl = []
+    subcl = docopt_subcl()
+    for k in argd:
+        if argd[k] == True:
+            if k in subcl:
+                argl.insert(0, k)
+            else:
+                argl.append(k)
+        elif argd[k] is not None:
+            argl.append(argd[k])
+    return argl
 
 
 # -----------------------------------------------------------------------------
@@ -867,16 +1041,21 @@ def docopt_exp(**kw):
     """
     rv = {'--debug': False,
           '--help': False,
+          '--build': False,
+          '--major': False,
+          '--minor': False,
+          '--patch': False,
+          '--quiet': False,
+          '-q': False,
           '--version': False,
-          '-d': False,
           'flix': False,
-          '<filename>': None,
+          '<path>': None,
+          '<target>': None,
           'nodoc': False,
           'dunn': False,
           'depth': False,
           '<commitish>': None,
-          'bv': False,    # bump version
-          '<part>': None,
+          'bv': False,
           'hook': False,
           '--add': False,
           '<hookname>': None,
@@ -886,8 +1065,9 @@ def docopt_exp(**kw):
           'dupl': False
           }
     for k in kw:
-        if k in rv:
-            rv[k] = kw[k]
+        kp = '--debug' if k == '-d' else k
+        if kp in rv:
+            rv[kp] = kw[k]
     return rv
 
 

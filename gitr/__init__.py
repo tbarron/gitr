@@ -41,6 +41,7 @@ Usage:
 
 Options:
     -h --help        Provide help info (display this document)
+    -d --debug       Run under the debugger
     --version        Show version
     --list           List git hooks available to install
     --show           List installed git hooks
@@ -98,6 +99,16 @@ def gitr_bv(opts):
 
     If multiple matches are found, only the first is updated
     """
+    for a, b in [('--major', '--minor'),
+                 ('--major', '--patch'),
+                 ('--major', '--build'),
+                 ('--minor', '--patch'),
+                 ('--minor', '--build'),
+                 ('--patch', '--build'),
+                 ]:
+        if opts.get(a, False) and opts.get(b, False):
+            sys.exit('{0} and {1} are mutually exclusive'.format(a, b))
+
     tl = []
     target = opts.get('<path>', 'version.py') or 'version.py'
     try:
@@ -180,7 +191,8 @@ def version_increment(iv, opts):
         elif 4 == len(ov):
             ov = iv[0:3] + [strinc(iv[3])]
         else:
-            sys.exit("'{}' is not a recognized version format".format(ov))
+            v = '.'.join(ov)
+            sys.exit("'{}' is not a recognized version format".format(v))
     return ov
 
 
