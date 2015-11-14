@@ -17,8 +17,8 @@ install:
  - "pip install --upgrade pip"
  - "pip install -r requirements.txt"
  - "pip install ."
- - "pip list"
- - "env"
+ - "git config user.email \"travis-user@example.com\""
+ - "git config user.name \"Travis User\""
 
 # command to run tests, e.g. python setup.py test
 # script: tox
