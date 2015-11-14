@@ -21,6 +21,11 @@ install:
 # script: tox
  - py.test -v
 
+addons:
+  apt:
+    packages:
+    - git
+
 # Not ready for this yet. travis_pypi_setup.py is in .attic
 # ---------------------------------------------------------
 # # After you create the Github repo and add it to Travis, run the
