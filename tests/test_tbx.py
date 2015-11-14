@@ -1,5 +1,6 @@
 import os
 import pytest
+import re
 
 from gitr import tbx
 
@@ -153,7 +154,7 @@ def test_run_stderr():
     pytest.dbgfunc()
     r = tbx.run("ls --nosuch")
     assert "ERR:" in r
-    assert "illegal option" in r
+    assert re.findall("(illegal|unrecognized) option", r)
 
 
 # -----------------------------------------------------------------------------
