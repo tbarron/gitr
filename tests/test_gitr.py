@@ -65,7 +65,7 @@ def bv_verify_diff(fmt, pre, post, oe):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
+# @pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_noarg_3(tmpdir, capsys):
     """
     pre: 2.7.3 in version.py
