@@ -81,7 +81,7 @@ def test_bv_file_noarg_3(tmpdir, capsys):
         r.git.add(vpath.basename)
         r.git.commit(m='inception')
         gitr.gitr_bv({'bv': True})
-        bv_verify_diff("__version__ = '{}'", pre, post, capsys.readouterr())
+        bv_verify_diff("__version__ = '{0}'", pre, post, capsys.readouterr())
     assert post in vpath.read()
 
 
@@ -123,7 +123,7 @@ def test_bv_file_noarg_4(tmpdir, capsys):
         r.git.add(vpath.basename)
         r.git.commit(m='inception')
         gitr.gitr_bv({'bv': True})
-        bv_verify_diff("__version__ = '{}'", pre, post, capsys.readouterr())
+        bv_verify_diff("__version__ = '{0}'", pre, post, capsys.readouterr())
     assert post in vpath.read()
 
 
@@ -161,7 +161,7 @@ def test_bv_nofile_major(tmpdir):
         r = git.Repo.init(tmpdir.strpath)
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '--major': True})
-        assert '{} not found'.format(vname) in str(e)
+        assert '{0} not found'.format(vname) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -222,7 +222,7 @@ def test_bv_already_bumped_default(tmpdir, already_setup):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '<path>': None})
         post = tbx.contents(v)
-    assert '{} is already bumped'.format(v) in str(e)
+    assert '{0} is already bumped'.format(v) in str(e)
     assert pre == post
 
 
@@ -239,7 +239,7 @@ def test_bv_already_bumped_explicit(tmpdir, already_setup):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '<path>': v})
         post = tbx.contents(v)
-    assert '{} is already bumped'.format(v) in str(e)
+    assert '{0} is already bumped'.format(v) in str(e)
     assert pre == post
 
 
@@ -256,7 +256,7 @@ def test_bv_already_staged_default(tmpdir, already_setup):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '<path>': None})
         post = tbx.contents(v)
-    assert '{} is already bumped'.format(v) in str(e)
+    assert '{0} is already bumped'.format(v) in str(e)
     assert pre == post
 
 
@@ -273,7 +273,7 @@ def test_bv_already_staged_explicit(tmpdir, already_setup):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True, '<path>': v})
         post = tbx.contents(v)
-    assert '{} is already bumped'.format(v) in str(e)
+    assert '{0} is already bumped'.format(v) in str(e)
     assert pre == post
 
 
@@ -403,7 +403,7 @@ def test_bv_file_major_4(tmpdir, capsys, repo_setup):
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--major': True,
                       '<path>': v.basename})
-        bv_verify_diff("__version__ = '{}'", pre, post, capsys.readouterr())
+        bv_verify_diff("__version__ = '{0}'", pre, post, capsys.readouterr())
     assert "__version__ = '{0}'".format(post) in v.read()
 
 
@@ -463,7 +463,7 @@ def test_bv_file_minor_4(tmpdir, capsys, repo_setup):
     r.git.commit(a=True, m='first version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--minor': True})
-        bv_verify_diff("__version__ = '{}'", pre, post,
+        bv_verify_diff("__version__ = '{0}'", pre, post,
                        capsys.readouterr())
     assert "__version__ = '{0}'".format(post) in v.read()
 
@@ -488,7 +488,7 @@ def test_bv_file_minor_3_fn(tmpdir, capsys, repo_setup):
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--minor': True,
                       '<path>': s.relto(tmpdir)})
-        bv_verify_diff("__version__ = '{}'", pre, post,
+        bv_verify_diff("__version__ = '{0}'", pre, post,
                        capsys.readouterr())
     assert "__version__ = '{0}'".format(post) in s.read()
 
@@ -530,7 +530,7 @@ def test_bv_nofile_patch(tmpdir, repo_setup):
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'--patch': True})
-        assert '{} not found'.format(v.basename) in str(e)
+        assert '{0} not found'.format(v.basename) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -571,7 +571,7 @@ def test_bv_file_patch_4(tmpdir, capsys, repo_setup):
     r.git.commit(a=True, m='first version')
     with tbx.chdir(tmpdir.strpath):
         gitr.gitr_bv({'bv': True, '--patch': True})
-        bv_verify_diff("__version__ = '{}'", pre, post,
+        bv_verify_diff("__version__ = '{0}'", pre, post,
                        capsys.readouterr())
     assert "__version__ = '{0}'".format(post) in v.read()
 
@@ -593,7 +593,7 @@ def test_bv_nofile_build(tmpdir, repo_setup):
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'--build': True})
-        assert '{} not found'.format(v.basename) in str(e)
+        assert '{0} not found'.format(v.basename) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -986,7 +986,7 @@ def test_vu_on_tfl(tmpdir):
         with pytest.raises(SystemExit) as e:
             gitr.version_update(trg.strpath, ['9', '8', '7'])
         assert ''.join(["Don't know where to put ",
-                        "'9.8.7' in '{}'".format(nov)]) in str(e)
+                        "'9.8.7' in '{0}'".format(nov)]) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -1004,7 +1004,7 @@ def test_vu_os_tmt(tmpdir):
         with pytest.raises(SystemExit) as e:
             gitr.version_update(trg.strpath, newv, oldv)
         assert ' '.join(["Can't update",
-                        "'{}'".format('.'.join(oldv)),
+                        "'{0}'".format('.'.join(oldv)),
                         "in an empty file"]) in str(e)
 
 
@@ -1020,7 +1020,7 @@ def test_vu_os_tfl_op(tmpdir):
     (os, ns) = ('.'.join(_) for _ in [oldv, newv])
     trg = tmpdir.join('fooble-de-bar')
 
-    t = '"{}" is the version\n'
+    t = '"{0}" is the version\n'
     (pre, post) = (t.format(_) for _ in [os, ns])
     trg.write(pre)
     with tbx.chdir(tmpdir.strpath):
@@ -1043,7 +1043,7 @@ def test_vu_os_tfl_onp(tmpdir):
     t = '"sizzle" is the version'
     (pre, post) = (t.format(_) for _ in [os, ns])
     trg.write(pre)
-    exp = "'{}' not found in '{}'".format(os, pre)
+    exp = "'{0}' not found in '{1}'".format(os, pre)
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
             gitr.version_update(trg.basename, newv, oldv)
