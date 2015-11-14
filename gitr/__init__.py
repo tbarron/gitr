@@ -112,7 +112,7 @@ def gitr_bv(opts):
     try:
         repo = git.Repo()
         s = repo.git.status(target, porc=True)
-        if re.findall('M\s+{}'.format(target), s):
+        if re.findall('M\s+{0}'.format(target), s):
             sys.exit('{0} is already bumped'.format(target))
     except git.InvalidGitRepositoryError:
         sys.exit('{0} is not in a git repo'.format(target))
@@ -132,7 +132,7 @@ def gitr_bv(opts):
                 if target in f:
                     tl.append(os.path.join(r, target))
             if tl == []:
-                sys.exit('{} not found'.format(target))
+                sys.exit('{0} not found'.format(target))
             target = tl[0]
 
     with open(target, 'r') as f:
@@ -141,10 +141,10 @@ def gitr_bv(opts):
     try:
         v = q[0][1]
     except NameError:
-        sys.exit("No version found in {} ['{}']".format(target,
+        sys.exit("No version found in {0} ['{1}']".format(target,
                                                         content))
     except IndexError:
-        sys.exit("No version found in {} ['{}']".format(target,
+        sys.exit("No version found in {0} ['{1}']".format(target,
                                                         content))
 
     iv = v.split('.')
@@ -235,7 +235,7 @@ def version_increment(iv, opts):
             ov = iv[0:3] + [strinc(iv[3])]
         else:
             v = '.'.join(ov)
-            sys.exit("'{}' is not a recognized version format".format(v))
+            sys.exit("'{0}' is not a recognized version format".format(v))
     return ov
 
 
@@ -256,14 +256,15 @@ def version_update(target, new, old=None):
     with open(target, 'w') as f:
         if not old:
             if not c:
-                f.write("__version__ = '{}'\n".format(news))
+                f.write("__version__ = '{0}'\n".format(news))
             else:
-                sys.exit("Don't know where to put '{}' in '{}'".format(news, c))
+                sys.exit("Don't know where to put '{0}' in '{1}'".format(news,
+                                                                         c))
         else:
             olds = '.'.join(old)
             if not c:
-                sys.exit("Can't update '{}' in an empty file".format(olds))
+                sys.exit("Can't update '{0}' in an empty file".format(olds))
             elif olds in c:
                 f.write(c.replace(olds, news))
             else:
-                sys.exit("'{}' not found in '{}'".format(olds, c))
+                sys.exit("'{0}' not found in '{1}'".format(olds, c))
