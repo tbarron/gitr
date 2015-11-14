@@ -22,7 +22,7 @@ install:
 
 # command to run tests, e.g. python setup.py test
 # script: tox
- - py.test -v -s
+ - py.test -v
 
 # addons:
 #   apt:
