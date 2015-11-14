@@ -151,8 +151,8 @@ def test_run_stderr():
     Run a process and capture stdout
     """
     pytest.dbgfunc()
-    r = tbx.run("ls -Q")
-    # assert "ERR:" in r
+    r = tbx.run("ls --nosuch")
+    assert "ERR:" in r
     assert "illegal option" in r
 
 
