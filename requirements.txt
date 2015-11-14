@@ -11,10 +11,10 @@
 docopt
 # docutils (0.12)
 # enum34 (1.0.4)
-flake8 (2.4.1)           # testing
-future (0.15.2)
-gitdb (0.6.4)
-GitPython (1.0.1)
+flake8
+future
+gitdb
+GitPython
 # idna (2.0)
 # ipaddress (1.0.14)
 # Jinja2 (2.8)
