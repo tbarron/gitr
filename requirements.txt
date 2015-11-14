@@ -15,6 +15,7 @@ flake8
 future
 gitdb
 GitPython
+pexpect==3.3
 # idna (2.0)
 # ipaddress (1.0.14)
 # Jinja2 (2.8)
