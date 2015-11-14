@@ -80,9 +80,15 @@ def main():
     if o['--version']:
         sys.exit(version.__version__)
 
-    for k in (_ for _ in o.keys() if _[0] not in ('-', '<') and o[_]):
-        f = getattr(sys.modules[__name__], "_".join(['gitr', k]))
-        f(o)
+    dispatch(o)
+
+
+# -----------------------------------------------------------------------------
+def dispatch(o):
+    targl = [_ for _ in o if _[0] not in ['-', '<'] and o[_]]
+    funcname = '_'.join(['gitr', targl[0]])
+    func = getattr(sys.modules[__name__], funcname)
+    func(o)
 
 
 # -----------------------------------------------------------------------------
