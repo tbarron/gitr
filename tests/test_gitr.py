@@ -211,6 +211,8 @@ def test_bv_already_bumped_default(tmpdir, already_setup):
     If 'version.py' is already bumped, don't update it
     """
     pytest.dbgfunc()
+    os.system("ls -l /usr/bin/git")
+    os.system("echo $PATH")
     v = pytest.this['target']
     with tbx.chdir(tmpdir.strpath):
         pre = tbx.contents(v)

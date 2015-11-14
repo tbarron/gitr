@@ -20,12 +20,12 @@ install:
 
 # command to run tests, e.g. python setup.py test
 # script: tox
- - py.test -v
+ - py.test -v -s
 
-addons:
-  apt:
-    packages:
-    - git
+# addons:
+#   apt:
+#     packages:
+#     - git
 
 # Not ready for this yet. travis_pypi_setup.py is in .attic
 # ---------------------------------------------------------
