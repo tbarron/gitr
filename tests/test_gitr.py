@@ -24,206 +24,6 @@ from gitr import tbx
 
 
 # -----------------------------------------------------------------------------
-def test_vu_on_tmt(tmpdir):
-    """
-    old is None, target exists, but is empty
-    exp: write standard version expression to target
-    """
-    pytest.dbgfunc()
-    trg = tmpdir.join('version.py')
-    trg.write('')
-    with tbx.chdir(tmpdir.strpath):
-        gitr.version_update(trg.strpath, ['9', '8', '7'])
-    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
-
-
-# -----------------------------------------------------------------------------
-def test_vu_on_tns(tmpdir):
-    """
-    old is None, target does not exist
-    exp: write standard version expression to target
-    """
-    pytest.dbgfunc()
-    trg = tmpdir.join('version.py')
-    with tbx.chdir(tmpdir.strpath):
-        gitr.version_update(trg.strpath, ['9', '8', '7'])
-    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
-
-
-# -----------------------------------------------------------------------------
-def test_vu_on_tfl(tmpdir):
-    """
-    old is None, target is not empty
-    exp: 'Don't know where to put '<news>' in '<c>''
-    """
-    pytest.dbgfunc()
-    trg = tmpdir.join('version.py')
-    nov = 'The quick brown fox and all that'
-    trg.write(nov)
-    with tbx.chdir(tmpdir.strpath):
-        with pytest.raises(SystemExit) as e:
-            gitr.version_update(trg.strpath, ['9', '8', '7'])
-        assert ''.join(["Don't know where to put ",
-                        "'9.8.7' in '{}'".format(nov)]) in str(e)
-
-
-# -----------------------------------------------------------------------------
-def test_vu_os_tmt(tmpdir):
-    """
-    old is not None, target is empty
-    exp: 'Can't update '<olds>' in an empty file'
-    """
-    pytest.dbgfunc()
-    trg = tmpdir.join('version.py')
-    oldv = ['9', '8', '6']
-    newv = oldv[0:2] + ['7']
-    trg.write('')
-    with tbx.chdir(tmpdir.strpath):
-        with pytest.raises(SystemExit) as e:
-            gitr.version_update(trg.strpath, newv, oldv)
-        assert ' '.join(["Can't update",
-                        "'{}'".format('.'.join(oldv)),
-                        "in an empty file"]) in str(e)
-
-
-# -----------------------------------------------------------------------------
-def test_vu_os_tfl_op(tmpdir):
-    """
-    old is not None, target is not empty, old IS in target, non-standard
-    exp: <olds> replaced with <news> in non-standard expression
-    """
-    pytest.dbgfunc()
-    oldv = ['7', '3', '2', '32']
-    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
-    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
-    trg = tmpdir.join('fooble-de-bar')
-
-    t = '"{}" is the version\n'
-    (pre, post) = (t.format(_) for _ in [os, ns])
-    trg.write(pre)
-    with tbx.chdir(tmpdir.strpath):
-        gitr.version_update(trg.basename, newv, oldv)
-        assert post in tbx.contents(trg.basename)
-
-
-# -----------------------------------------------------------------------------
-def test_vu_os_tfl_onp(tmpdir):
-    """
-    old is not None, target is not empty, old is not in target
-    exp: '<olds>' not found in '<c>'
-    """
-    pytest.dbgfunc()
-    oldv = ['7', '3', '2', '32']
-    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
-    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
-    trg = tmpdir.join('fooble-de-bar')
-
-    t = '"sizzle" is the version'
-    (pre, post) = (t.format(_) for _ in [os, ns])
-    trg.write(pre)
-    exp = "'{}' not found in '{}'".format(os, pre)
-    with tbx.chdir(tmpdir.strpath):
-        with pytest.raises(SystemExit) as e:
-            gitr.version_update(trg.basename, newv, oldv)
-        assert exp in str(e)
-
-
-# -----------------------------------------------------------------------------
-def test_vi_major():
-    """
-    iv = ['7', '19', '23']
-    opts = {'--major': True}
-    rv = ['8', '0', '0']
-    """
-    pytest.dbgfunc()
-    exp = ['8', '0', '0']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--major': True})
-
-
-# -----------------------------------------------------------------------------
-def test_vi_minor():
-    """
-    iv = ['7', '19', '23']
-    opts = {'--minor': True}
-    rv = ['7', '20', '0']
-    """
-    pytest.dbgfunc()
-    exp = ['7', '20', '0']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--minor': True})
-
-
-# -----------------------------------------------------------------------------
-def test_vi_patch():
-    """
-    iv = ['7', '19', '23']
-    opts = {'--patch': True}
-    rv = ['7', '19', '24']
-    """
-    pytest.dbgfunc()
-    exp = ['7', '19', '24']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--patch': True})
-
-
-# -----------------------------------------------------------------------------
-def test_vi_xbuild():
-    """
-    iv = ['7', '19', '23']
-    opts = {'--build': True}
-    rv = ['7', '19', '23', '1']
-    """
-    pytest.dbgfunc()
-    exp = ['7', '19', '23', '1']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--build': True})
-
-
-# -----------------------------------------------------------------------------
-def test_vi_ibuild(tmpdir):
-    """
-    iv = ['7', '19', '23', '4']
-    opts = {'--build': True}
-    rv = ['7', '19', '23', '5']
-    """
-    pytest.dbgfunc()
-    exp = ['7', '19', '23', '5']
-    assert exp == gitr.version_increment(['7', '19', '23', '4'],
-                                         {'bv': True})
-
-
-# -----------------------------------------------------------------------------
-def test_vi_short(tmpdir):
-    """
-    iv = ['7', '19']
-    opts = {'--build': True}
-    sys.exit('7.19' is not a recognized version format)
-    """
-    pytest.dbgfunc()
-    inp = ['7', '19']
-    exp = "'{0}' is not a recognized version format".format('.'.join(inp))
-    with pytest.raises(SystemExit) as e:
-        res = gitr.version_increment(inp, {'bv': True})
-    assert exp in str(e)
-
-
-# -----------------------------------------------------------------------------
-def test_vi_long(tmpdir):
-    """
-    iv = ['7', '19', 'foo', 'sample', 'wokka']
-    opts = {'--build': True}
-    sys.exit('7.19.foo.sample.wokka' is not a recognized version format)
-    """
-    pytest.dbgfunc()
-    inp = ['7', '19', 'foo', 'sample', 'wokka']
-    exp = "'{0}' is not a recognized version format".format('.'.join(inp))
-    with pytest.raises(SystemExit) as e:
-        res = gitr.version_increment(inp, {'bv': True})
-    assert exp in str(e)
-
-
-# -----------------------------------------------------------------------------
 def test_bv_norepo(tmpdir):
     """
     pre: nothing
@@ -995,6 +795,25 @@ def test_docopt(argd, capsys):
 
 
 # -----------------------------------------------------------------------------
+@pytest.mark.parametrize('subc', ['dunn',
+                                  'depth',
+                                  'dupl',
+                                  'flix',
+                                  'hook',
+                                  'nodoc',
+                                  ])
+def test_gitr_unimpl(subc, capsys):
+    """
+    gitr <subc> -> 'coming soon'
+    """
+    pytest.dbgfunc()
+    func = getattr(gitr, 'gitr_' + subc)
+    func({subc: True})
+    o, e = capsys.readouterr()
+    assert 'Coming soon' in o
+
+
+# -----------------------------------------------------------------------------
 def test_pydoc_gitr(capsys):
     """
     Verify the behavior of running 'pydoc gitr'
@@ -1005,6 +824,206 @@ def test_pydoc_gitr(capsys):
     z = docopt_exp()
     for k in z:
         assert k in o
+
+
+# -----------------------------------------------------------------------------
+def test_vi_major():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--major': True}
+    rv = ['8', '0', '0']
+    """
+    pytest.dbgfunc()
+    exp = ['8', '0', '0']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--major': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_minor():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--minor': True}
+    rv = ['7', '20', '0']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '20', '0']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--minor': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_patch():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--patch': True}
+    rv = ['7', '19', '24']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '19', '24']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--patch': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_xbuild():
+    """
+    iv = ['7', '19', '23']
+    opts = {'--build': True}
+    rv = ['7', '19', '23', '1']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '19', '23', '1']
+    assert exp == gitr.version_increment(['7', '19', '23'],
+                                         {'--build': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_ibuild(tmpdir):
+    """
+    iv = ['7', '19', '23', '4']
+    opts = {'--build': True}
+    rv = ['7', '19', '23', '5']
+    """
+    pytest.dbgfunc()
+    exp = ['7', '19', '23', '5']
+    assert exp == gitr.version_increment(['7', '19', '23', '4'],
+                                         {'bv': True})
+
+
+# -----------------------------------------------------------------------------
+def test_vi_short(tmpdir):
+    """
+    iv = ['7', '19']
+    opts = {'--build': True}
+    sys.exit('7.19' is not a recognized version format)
+    """
+    pytest.dbgfunc()
+    inp = ['7', '19']
+    exp = "'{0}' is not a recognized version format".format('.'.join(inp))
+    with pytest.raises(SystemExit) as e:
+        res = gitr.version_increment(inp, {'bv': True})
+    assert exp in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vi_long(tmpdir):
+    """
+    iv = ['7', '19', 'foo', 'sample', 'wokka']
+    opts = {'--build': True}
+    sys.exit('7.19.foo.sample.wokka' is not a recognized version format)
+    """
+    pytest.dbgfunc()
+    inp = ['7', '19', 'foo', 'sample', 'wokka']
+    exp = "'{0}' is not a recognized version format".format('.'.join(inp))
+    with pytest.raises(SystemExit) as e:
+        res = gitr.version_increment(inp, {'bv': True})
+    assert exp in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_on_tmt(tmpdir):
+    """
+    old is None, target exists, but is empty
+    exp: write standard version expression to target
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    trg.write('')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.version_update(trg.strpath, ['9', '8', '7'])
+    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
+
+
+# -----------------------------------------------------------------------------
+def test_vu_on_tns(tmpdir):
+    """
+    old is None, target does not exist
+    exp: write standard version expression to target
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    with tbx.chdir(tmpdir.strpath):
+        gitr.version_update(trg.strpath, ['9', '8', '7'])
+    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
+
+
+# -----------------------------------------------------------------------------
+def test_vu_on_tfl(tmpdir):
+    """
+    old is None, target is not empty
+    exp: 'Don't know where to put '<news>' in '<c>''
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    nov = 'The quick brown fox and all that'
+    trg.write(nov)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.version_update(trg.strpath, ['9', '8', '7'])
+        assert ''.join(["Don't know where to put ",
+                        "'9.8.7' in '{}'".format(nov)]) in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_os_tmt(tmpdir):
+    """
+    old is not None, target is empty
+    exp: 'Can't update '<olds>' in an empty file'
+    """
+    pytest.dbgfunc()
+    trg = tmpdir.join('version.py')
+    oldv = ['9', '8', '6']
+    newv = oldv[0:2] + ['7']
+    trg.write('')
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.version_update(trg.strpath, newv, oldv)
+        assert ' '.join(["Can't update",
+                        "'{}'".format('.'.join(oldv)),
+                        "in an empty file"]) in str(e)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_os_tfl_op(tmpdir):
+    """
+    old is not None, target is not empty, old IS in target, non-standard
+    exp: <olds> replaced with <news> in non-standard expression
+    """
+    pytest.dbgfunc()
+    oldv = ['7', '3', '2', '32']
+    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
+    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
+    trg = tmpdir.join('fooble-de-bar')
+
+    t = '"{}" is the version\n'
+    (pre, post) = (t.format(_) for _ in [os, ns])
+    trg.write(pre)
+    with tbx.chdir(tmpdir.strpath):
+        gitr.version_update(trg.basename, newv, oldv)
+        assert post in tbx.contents(trg.basename)
+
+
+# -----------------------------------------------------------------------------
+def test_vu_os_tfl_onp(tmpdir):
+    """
+    old is not None, target is not empty, old is not in target
+    exp: '<olds>' not found in '<c>'
+    """
+    pytest.dbgfunc()
+    oldv = ['7', '3', '2', '32']
+    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
+    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
+    trg = tmpdir.join('fooble-de-bar')
+
+    t = '"sizzle" is the version'
+    (pre, post) = (t.format(_) for _ in [os, ns])
+    trg.write(pre)
+    exp = "'{}' not found in '{}'".format(os, pre)
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(SystemExit) as e:
+            gitr.version_update(trg.basename, newv, oldv)
+        assert exp in str(e)
 
 
 # -----------------------------------------------------------------------------

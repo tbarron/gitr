@@ -5,6 +5,10 @@ gitr provides a collection of subcommands that I find useful in managing git
 repositories.
 
 Commands:
+    gitr bv - will bump the version of the current repo as set in <path>
+        (default = version.py). Options --major, --minor, --patch, --build
+        (default) determine which component of the version value is bumped
+
     gitr dunn - will suggest what the next step to be done probably is based on
         the state of the repo.
 
@@ -12,32 +16,28 @@ Commands:
         between the one in question and the present as well as the age of the
         target committish)
 
+    gitr dupl - will find and report any duplicate functions in the current
+        tree in .py files
+
+    gitr flix - will find and report conflicts
+
     gitr hook - will list available hooks (--list), install and link a hook
         (--add), show a list of installed hooks (--show), and remove hooks
         (--rm)
 
-    gitr bv - will bump the version of the current repo as set in <path>
-        (default = version.py). Options --major, --minor, --patch, --build
-        (default) determine which component of the version value is bumped
-
-    gitr flix - will find and report conflicts
-
     gitr nodoc - will find and report any functions in the current tree in .py
         files that have no docstring
 
-    gitr dupl - will find and report any duplicate functions in the current
-        tree in .py files
-
 Usage:
-    gitr dunn [(-d|--debug)]
+    gitr (-h|--help|--version)
+    gitr bv [(-d|--debug)] [(-q|--quiet)] [(--major|--minor|--patch|--build)] [<path>]
     gitr depth [(-d|--debug)] <commitish>
+    gitr dunn [(-d|--debug)]
+    gitr dupl [(-d|--debug)]
+    gitr flix [(-d|--debug)] [<target>]
     gitr hook [(-d|--debug)] (--list|--show)
     gitr hook [(-d|--debug)] (--add|--rm) <hookname>
-    gitr bv [(-d|--debug)] [(-q|--quiet)] [(--major|--minor|--patch|--build)] [<path>]
-    gitr flix [(-d|--debug)] [<target>]
     gitr nodoc [(-d|--debug)]
-    gitr dupl [(-d|--debug)]
-    gitr (-h|--help|--version)
 
 Options:
     -h --help        Provide help info (display this document)
@@ -83,14 +83,6 @@ def main():
     for k in (_ for _ in o.keys() if _[0] not in ('-', '<') and o[_]):
         f = getattr(sys.modules[__name__], "_".join(['gitr', k]))
         f(o)
-
-
-# -----------------------------------------------------------------------------
-def gitr_dunn(opts):
-    """temporary entrypoint
-    """
-    print("Git'r Dunn: I dunno, maybe do a commit?")
-    print("This is a temporary test entrypoint. It will become a plugin")
 
 
 # -----------------------------------------------------------------------------
@@ -154,6 +146,51 @@ def gitr_bv(opts):
     version_update(target, ov, iv)
     if not opts.get('-q', False) and not opts.get('--quiet', False):
         version_diff(repo, target)
+
+
+# -----------------------------------------------------------------------------
+def gitr_depth(opts):
+    """Report the number of commits back to a given one and its age
+    """
+    print("Coming soon: report the number steps back to a given commit")
+
+
+# -----------------------------------------------------------------------------
+def gitr_dunn(opts):
+    """Suggest the next step based on the state of the repository
+    """
+    print("Git'r Dunn: I dunno, maybe do a commit?")
+    print("This is a temporary test entrypoint. It will become a plugin")
+    print("Coming soon - an oracle to suggest the next step given the state")
+    print("of the repository")
+
+
+# -----------------------------------------------------------------------------
+def gitr_dupl(opts):
+    """Report duplicate function names
+    """
+    print("Coming soon: duplicate function detector")
+
+
+# -----------------------------------------------------------------------------
+def gitr_flix(opts):
+    """Report conflicts
+    """
+    print("Coming soon: conflict reporter")
+
+
+# -----------------------------------------------------------------------------
+def gitr_hook(opts):
+    """Manage git hooks
+    """
+    print("Coming soon: hook management")
+
+
+# -----------------------------------------------------------------------------
+def gitr_nodoc(opts):
+    """Report functions with no docstring
+    """
+    print("Coming soon: find and report functions with no docstring")
 
 
 # -----------------------------------------------------------------------------
