@@ -137,9 +137,10 @@ def gitr_bv(opts):
 
     with open(target, 'r') as f:
         content = f.read()
-    q = re.findall(r'(.*?\W+)?(\d+\.\d+\.\d+\.?(\w+)?)(.*)?', content)
+    q = re.findall(r'(\d+\.\d+\.\d+\.?\w*)', content)
+    # q = re.findall(r'(.*?\W+)?(\d+\.\d+\.\d+\.?(\w+)?)(.*)?', content)
     try:
-        v = q[0][1]
+        v = q[0]
     except NameError:
         sys.exit("No version found in {0} ['{1}']".format(target,
                                                         content))
