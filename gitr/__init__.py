@@ -109,13 +109,6 @@ def gitr_bv(opts):
 
     tl = []
     target = opts.get('<path>', 'version.py') or 'version.py'
-    try:
-        repo = git.Repo()
-        s = repo.git.status(target, porc=True)
-        if re.findall('M\s+{0}'.format(target), s):
-            sys.exit('{0} is already bumped'.format(target))
-    except git.InvalidGitRepositoryError:
-        sys.exit('{0} is not in a git repo'.format(target))
     if not os.path.exists(target):
         if '/' in target:
             td = tbx.dirname(target)
@@ -134,6 +127,14 @@ def gitr_bv(opts):
             if tl == []:
                 sys.exit('{0} not found'.format(target))
             target = tl[0]
+
+    try:
+        repo = git.Repo()
+        s = repo.git.status(target, porc=True)
+        if s.strip() != '':
+            sys.exit('{0} is already bumped'.format(target))
+    except git.InvalidGitRepositoryError:
+        sys.exit('{0} is not in a git repo'.format(target))
 
     with open(target, 'r') as f:
         content = f.read()

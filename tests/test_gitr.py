@@ -18,6 +18,7 @@ import shlex
 import subprocess
 import unittest
 
+
 import gitr
 from gitr import gitr as app
 from gitr import tbx
@@ -31,7 +32,9 @@ def test_bv_norepo(tmpdir):
     post: exception('version.py not found')
     """
     pytest.dbgfunc()
+    v = tmpdir.join('version.py')
     with tbx.chdir(tmpdir.strpath):
+        v.write("__version__ = '0.0.0'\n")
         with pytest.raises(SystemExit) as e:
             gitr.gitr_bv({'bv': True})
     assert 'version.py is not in a git repo' in str(e)
@@ -188,10 +191,14 @@ def already_setup(tmpdir, request):
     rname = request.function.__name__
     target = {'test_bv_already_staged_default': 'version.py',
               'test_bv_already_staged_explicit': 'boodle',
+              'test_bv_already_staged_deep': 'sub1/sub2/version.py',
               'test_bv_already_bumped_default': 'version.py',
-              'test_bv_already_bumped_explicit': 'frobnicate'}[rname]
+              'test_bv_already_bumped_explicit': 'frobnicate',
+              'test_bv_already_bumped_deep': 'sub1/sub2/version.py',
+              }[rname]
     pytest.this['target'] = target
     t = tmpdir.join(target)
+    t.ensure()
     with tbx.chdir(tmpdir.strpath):
         # init the repo
         r = git.Repo.init(tmpdir.strpath)
@@ -211,8 +218,22 @@ def test_bv_already_bumped_default(tmpdir, already_setup):
     If 'version.py' is already bumped, don't update it
     """
     pytest.dbgfunc()
-    os.system("ls -l /usr/bin/git")
-    os.system("echo $PATH")
+    v = pytest.this['target']
+    with tbx.chdir(tmpdir.strpath):
+        pre = tbx.contents(v)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': None})
+        post = tbx.contents(v)
+    assert '{0} is already bumped'.format(v) in str(e)
+    assert pre == post
+
+
+# -----------------------------------------------------------------------------
+def test_bv_already_bumped_deep(tmpdir, already_setup):
+    """
+    If 'version.py' is already bumped, don't update it
+    """
+    pytest.dbgfunc()
     v = pytest.this['target']
     with tbx.chdir(tmpdir.strpath):
         pre = tbx.contents(v)
@@ -241,6 +262,22 @@ def test_bv_already_bumped_explicit(tmpdir, already_setup):
 
 # -----------------------------------------------------------------------------
 def test_bv_already_staged_default(tmpdir, already_setup):
+    """
+    If 'version.py' is already staged, don't update it
+    """
+    pytest.dbgfunc()
+    v = pytest.this['target']
+    with tbx.chdir(tmpdir.strpath):
+        pre = tbx.contents(v)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': None})
+        post = tbx.contents(v)
+    assert '{0} is already bumped'.format(v) in str(e)
+    assert pre == post
+
+
+# -----------------------------------------------------------------------------
+def test_bv_already_staged_deep(tmpdir, already_setup):
     """
     If 'version.py' is already staged, don't update it
     """
