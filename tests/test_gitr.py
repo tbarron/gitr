@@ -65,7 +65,6 @@ def bv_verify_diff(fmt, pre, post, oe):
 
 
 # -----------------------------------------------------------------------------
-# @pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_noarg_3(tmpdir, capsys):
     """
     pre: 2.7.3 in version.py
@@ -107,7 +106,6 @@ def test_bv_dir_nofile(tmpdir):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_noarg_4(tmpdir, capsys):
     """
     pre: 2.7.3.8 in version.py
@@ -208,7 +206,6 @@ def already_setup(tmpdir, request):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_already_bumped_default(tmpdir, already_setup):
     """
     If 'version.py' is already bumped, don't update it
@@ -227,7 +224,6 @@ def test_bv_already_bumped_default(tmpdir, already_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_already_bumped_explicit(tmpdir, already_setup):
     """
     If an explicit target is already bumped, don't update it
@@ -244,7 +240,6 @@ def test_bv_already_bumped_explicit(tmpdir, already_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_already_staged_default(tmpdir, already_setup):
     """
     If 'version.py' is already staged, don't update it
@@ -261,7 +256,6 @@ def test_bv_already_staged_default(tmpdir, already_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_already_staged_explicit(tmpdir, already_setup):
     """
     If an explicit target is already staged, don't update it
@@ -321,7 +315,6 @@ def repo_setup(tmpdir):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_major_3(tmpdir, capsys, repo_setup):
     """
     pre: '7.4.3' in version.py
@@ -343,7 +336,6 @@ def test_bv_file_major_3(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_major_3_fn(tmpdir, capsys, repo_setup):
     """
     pre: '7.4.3' in splack
@@ -364,7 +356,6 @@ def test_bv_file_major_3_fn(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_nofile_major_3_fn(tmpdir, repo_setup):
     """
     pre: '7.4.3' in splack
@@ -387,7 +378,6 @@ def test_bv_nofile_major_3_fn(tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_major_4(tmpdir, capsys, repo_setup):
     """
     pre: '1.0.0.17' in version.py
@@ -408,7 +398,6 @@ def test_bv_file_major_4(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_nofile_minor(tmpdir, repo_setup):
     """
     pre: nothing
@@ -427,7 +416,6 @@ def test_bv_nofile_minor(tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_minor_3(tmpdir, capsys, repo_setup):
     """
     pre: '3.3.2' in version.py
@@ -448,7 +436,6 @@ def test_bv_file_minor_3(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_minor_4(tmpdir, capsys, repo_setup):
     """
     pre: '3.3.2.7' in version.py
@@ -469,7 +456,6 @@ def test_bv_file_minor_4(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_minor_3_fn(tmpdir, capsys, repo_setup):
     """
     pre: '3.3.2' in foo/bar/setup.py
@@ -494,7 +480,6 @@ def test_bv_file_minor_3_fn(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_minor_4_fn(tmpdir, repo_setup):
     """
     pre: '3.3.2.7' in version.py
@@ -515,7 +500,6 @@ def test_bv_file_minor_4_fn(tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_nofile_patch(tmpdir, repo_setup):
     """
     pre: nothing
@@ -534,7 +518,6 @@ def test_bv_nofile_patch(tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_patch_3(tmpdir, repo_setup, capsys):
     """
     pre: '1.3.2' in version.py
@@ -556,7 +539,6 @@ def test_bv_file_patch_3(tmpdir, repo_setup, capsys):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_patch_4(tmpdir, capsys, repo_setup):
     """
     pre: '1.3.2.7' in version.py
@@ -577,7 +559,6 @@ def test_bv_file_patch_4(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_nofile_build(tmpdir, repo_setup):
     """
     Should raise exception
@@ -597,7 +578,6 @@ def test_bv_nofile_build(tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_build_3_fn(tmpdir, repo_setup):
     """
     pre: '7.8.9' in ./pkg/foobar
@@ -619,7 +599,6 @@ def test_bv_file_build_3_fn(tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_file_build_4(tmpdir, capsys, repo_setup):
     """
     pre: '1.2.3.4' in foo/bar/version.py
@@ -642,7 +621,6 @@ def test_bv_file_build_4(tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
-@pytest.mark.skipif(os.getenv('TRAVIS') == "true", reason="bleah")
 def test_bv_major_minor(tmpdir, repo_setup):
     """
     pre: nothing
