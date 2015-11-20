@@ -129,7 +129,7 @@ def gitr_bv(opts):
             target = tl[0]
 
     try:
-        repo = git.Repo()
+        repo = find_repo_root()
         s = repo.git.status(target, porc=True)
         if s.strip() != '':
             sys.exit('{0} is already bumped'.format(target))
@@ -198,6 +198,24 @@ def gitr_nodoc(opts):
     """Report functions with no docstring
     """
     print("Coming soon: find and report functions with no docstring")
+
+
+# -----------------------------------------------------------------------------
+def find_repo_root():
+    """
+    Starting from '.', step up until we find a git repo. Return a git.Repo
+    object initialized from it
+    """
+    loc = os.getcwd()
+    clue = os.path.join(loc, '.git')
+    while not os.path.isdir(clue) and 1 < len(loc):
+        loc = os.path.dirname(loc)
+        clue = os.path.join(loc, '.git')
+
+    if os.path.isdir(clue):
+        return git.Repo(clue)
+    else:
+        raise git.InvalidGitRepositoryError(clue)
 
 
 # -----------------------------------------------------------------------------

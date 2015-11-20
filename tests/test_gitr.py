@@ -547,6 +547,27 @@ def test_bv_file_build_3_fn(basic, tmpdir, repo_setup):
 
 
 # -----------------------------------------------------------------------------
+def test_bv_file_build_deep(basic, tmpdir, repo_setup):
+    """
+    pre: '7.8.9' in ./pkg/foobar
+    gitr bv --build ./pkg/foobar
+    post: '7.8.9.1' in ./pkg/foobar
+    """
+    bf = pytest.basic_fx
+    r = pytest.this['repo']
+    pre, post = '7.8.9', '7.8.9.1'
+    t = pytest.this['template']
+    op = 'foo/bar/other_name'
+    o = pytest.this['q'][op]
+    o['locpath'].write(t.format(pre))
+    r.git.commit(a=True, m='version')
+    with tbx.chdir(o['locpath'].dirname):
+        gitr.gitr_bv({'--build': True,
+                      '<path>': o['locpath'].basename})
+    assert t.format(post) in o['locpath'].read()
+
+
+# -----------------------------------------------------------------------------
 def test_bv_file_build_4(basic, tmpdir, capsys, repo_setup):
     """
     pre: '1.2.3.4' in foo/bar/version.py
