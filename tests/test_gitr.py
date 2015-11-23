@@ -805,9 +805,9 @@ def test_vi_major():
     rv = ['8', '0', '0']
     """
     pytest.dbgfunc()
-    exp = ['8', '0', '0']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--major': True})
+    inp, exp = '7.19.23', '8.0.0'
+    assert exp.split('.') == gitr.version_increment(inp.split('.'),
+                                                    {'--major': True})
 
 
 # -----------------------------------------------------------------------------
@@ -818,9 +818,9 @@ def test_vi_minor():
     rv = ['7', '20', '0']
     """
     pytest.dbgfunc()
-    exp = ['7', '20', '0']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--minor': True})
+    inp, exp = '7.19.23', '7.20.0'
+    assert exp.split('.') == gitr.version_increment(inp.split('.'),
+                                                    {'--minor': True})
 
 
 # -----------------------------------------------------------------------------
@@ -831,9 +831,9 @@ def test_vi_patch():
     rv = ['7', '19', '24']
     """
     pytest.dbgfunc()
-    exp = ['7', '19', '24']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--patch': True})
+    inp, exp = '7.19.23', '7.19.24'
+    assert exp.split('.') == gitr.version_increment(inp.split('.'),
+                                                    {'--patch': True})
 
 
 # -----------------------------------------------------------------------------
@@ -844,9 +844,9 @@ def test_vi_xbuild():
     rv = ['7', '19', '23', '1']
     """
     pytest.dbgfunc()
-    exp = ['7', '19', '23', '1']
-    assert exp == gitr.version_increment(['7', '19', '23'],
-                                         {'--build': True})
+    inp, exp = '7.19.23', '7.19.23.1'
+    assert exp.split('.') == gitr.version_increment(inp.split('.'),
+                                                    {'--build': True})
 
 
 # -----------------------------------------------------------------------------
@@ -857,9 +857,9 @@ def test_vi_ibuild(tmpdir):
     rv = ['7', '19', '23', '5']
     """
     pytest.dbgfunc()
-    exp = ['7', '19', '23', '5']
-    assert exp == gitr.version_increment(['7', '19', '23', '4'],
-                                         {'bv': True})
+    inp, exp = '7.19.23.4', '7.19.23.5'
+    assert exp.split('.') == gitr.version_increment(inp.split('.'),
+                                                    {'bv': True})
 
 
 # -----------------------------------------------------------------------------
@@ -870,10 +870,10 @@ def test_vi_short(basic, tmpdir):
     sys.exit('7.19' is not a recognized version format)
     """
     bf = pytest.basic_fx
-    inp = ['7', '19']
-    exp = bf['badform'].format('.'.join(inp))
+    inp = '7.19'
+    exp = bf['badform'].format(inp)
     with pytest.raises(SystemExit) as e:
-        res = gitr.version_increment(inp, {'bv': True})
+        res = gitr.version_increment(inp.split('.'), {'bv': True})
     assert exp in str(e)
 
 
@@ -885,10 +885,10 @@ def test_vi_long(basic, tmpdir):
     sys.exit('7.19.foo.sample.wokka' is not a recognized version format)
     """
     bf = pytest.basic_fx
-    inp = ['7', '19', 'foo', 'sample', 'wokka']
-    exp = bf['badform'].format('.'.join(inp))
+    inp = '7.19.foo.sample.wokka'
+    exp = bf['badform'].format(inp)
     with pytest.raises(SystemExit) as e:
-        res = gitr.version_increment(inp, {'bv': True})
+        res = gitr.version_increment(inp.split('.'), {'bv': True})
     assert exp in str(e)
 
 
@@ -901,9 +901,10 @@ def test_vu_on_tmt(tmpdir):
     pytest.dbgfunc()
     trg = tmpdir.join('version.py')
     trg.write('')
+    v = '9.8.7'
     with tbx.chdir(tmpdir.strpath):
-        gitr.version_update(trg.strpath, ['9', '8', '7'])
-    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
+        gitr.version_update(trg.strpath, v.split('.'))
+    assert tbx.contents(trg.strpath) == "__version__ = '{0}'\n".format(v)
 
 
 # -----------------------------------------------------------------------------
@@ -914,9 +915,10 @@ def test_vu_on_tns(tmpdir):
     """
     pytest.dbgfunc()
     trg = tmpdir.join('version.py')
+    v = '9.8.7'
     with tbx.chdir(tmpdir.strpath):
-        gitr.version_update(trg.strpath, ['9', '8', '7'])
-    assert tbx.contents(trg.strpath) == "__version__ = '9.8.7'\n"
+        gitr.version_update(trg.strpath, v.split('.'))
+    assert tbx.contents(trg.strpath) == "__version__ = '{0}'\n".format(v)
 
 
 # -----------------------------------------------------------------------------
@@ -929,11 +931,15 @@ def test_vu_on_tfl(tmpdir):
     trg = tmpdir.join('version.py')
     nov = 'The quick brown fox and all that'
     trg.write(nov)
+    v = '9.8.7'
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
-            gitr.version_update(trg.strpath, ['9', '8', '7'])
-        assert ''.join(["Don't know where to put ",
-                        "'9.8.7' in '{0}'".format(nov)]) in str(e)
+            gitr.version_update(trg.strpath, v.split('.'))
+        assert ''.join(["Don't know where to put '",
+                        v,
+                        "' in '",
+                        nov,
+                        "'"]) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -944,15 +950,14 @@ def test_vu_os_tmt(tmpdir):
     """
     pytest.dbgfunc()
     trg = tmpdir.join('version.py')
-    oldv = ['9', '8', '6']
-    newv = oldv[0:2] + ['7']
+    oldv, newv = '9.8.6', '9.8.7'
     trg.write('')
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
-            gitr.version_update(trg.strpath, newv, oldv)
-        assert ' '.join(["Can't update",
-                        "'{0}'".format('.'.join(oldv)),
-                        "in an empty file"]) in str(e)
+            gitr.version_update(trg.strpath, newv.split('.'), oldv.split('.'))
+        assert ''.join(["Can't update '",
+                        oldv,
+                        "' in an empty file"]) in str(e)
 
 
 # -----------------------------------------------------------------------------
@@ -962,16 +967,14 @@ def test_vu_os_tfl_op(tmpdir):
     exp: <olds> replaced with <news> in non-standard expression
     """
     pytest.dbgfunc()
-    oldv = ['7', '3', '2', '32']
-    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
-    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
+    oldv, newv = '7.3.2.32', '7.3.2.33'
     trg = tmpdir.join('fooble-de-bar')
 
     t = '"{0}" is the version\n'
-    (pre, post) = (t.format(_) for _ in [os, ns])
+    (pre, post) = (t.format(_) for _ in [oldv, newv])
     trg.write(pre)
     with tbx.chdir(tmpdir.strpath):
-        gitr.version_update(trg.basename, newv, oldv)
+        gitr.version_update(trg.basename, newv.split('.'), oldv.split('.'))
         assert post in tbx.contents(trg.basename)
 
 
@@ -982,18 +985,16 @@ def test_vu_os_tfl_onp(tmpdir):
     exp: '<olds>' not found in '<c>'
     """
     pytest.dbgfunc()
-    oldv = ['7', '3', '2', '32']
-    newv = oldv[0:-1] + [str(int(oldv[-1])+1)]
-    (os, ns) = ('.'.join(_) for _ in [oldv, newv])
+    oldv, newv = '7.3.2.32', '7.3.2.33'
     trg = tmpdir.join('fooble-de-bar')
 
     t = '"sizzle" is the version'
-    (pre, post) = (t.format(_) for _ in [os, ns])
+    (pre, post) = (t.format(_) for _ in [oldv, newv])
     trg.write(pre)
-    exp = "'{0}' not found in '{1}'".format(os, pre)
+    exp = "'{0}' not found in '{1}'".format(oldv, pre)
     with tbx.chdir(tmpdir.strpath):
         with pytest.raises(SystemExit) as e:
-            gitr.version_update(trg.basename, newv, oldv)
+            gitr.version_update(trg.basename, newv.split('.'), oldv.split('.'))
         assert exp in str(e)
 
 
