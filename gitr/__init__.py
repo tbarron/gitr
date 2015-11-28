@@ -129,7 +129,7 @@ def gitr_bv(opts):
             target = tl[0]
 
     try:
-        repo = find_repo_root()
+        repo = git.Repo(find_repo_root())
         s = repo.git.status(target, porc=True)
         if s.strip() != '':
             sys.exit('{0} is already bumped'.format(target))
@@ -213,7 +213,7 @@ def find_repo_root():
         clue = os.path.join(loc, '.git')
 
     if os.path.isdir(clue):
-        return git.Repo(clue)
+        return(loc)
     else:
         raise git.InvalidGitRepositoryError(clue)
 

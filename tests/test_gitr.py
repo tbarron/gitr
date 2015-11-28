@@ -791,7 +791,7 @@ def test_find_repo_root_shallow(repo_setup, tmpdir):
     Current dir is the repo
     """
     with tbx.chdir(tmpdir.strpath):
-        assert tmpdir.strpath == find_repo_root()
+        assert tmpdir.strpath == gitr.find_repo_root()
 
 
 # -----------------------------------------------------------------------------
