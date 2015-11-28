@@ -766,6 +766,35 @@ def test_docopt(argd, capsys):
 
 
 # -----------------------------------------------------------------------------
+def test_find_repo_root_deep(repo_setup, tmpdir):
+    """
+    repo is several levels up
+    """
+    sub = tmpdir.join('a/b/c').ensure(dir=True)
+    with tbx.chdir(sub.strpath):
+        assert tmpdir.strpath == gitr.find_repo_root()
+
+
+# -----------------------------------------------------------------------------
+def test_find_repo_root_not(tmpdir):
+    """
+    Not in a repo
+    """
+    with tbx.chdir(tmpdir.strpath):
+        with pytest.raises(git.InvalidGitRepositoryError):
+            gitr.find_repo_root()
+
+
+# -----------------------------------------------------------------------------
+def test_find_repo_root_shallow(repo_setup, tmpdir):
+    """
+    Current dir is the repo
+    """
+    with tbx.chdir(tmpdir.strpath):
+        assert tmpdir.strpath == find_repo_root()
+
+
+# -----------------------------------------------------------------------------
 @pytest.mark.parametrize('subc', ['dunn',
                                   'depth',
                                   'dupl',
