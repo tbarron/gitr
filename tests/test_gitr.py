@@ -201,6 +201,23 @@ def test_bv_already_bumped_deep(basic, tmpdir, already_setup):
 
 
 # -----------------------------------------------------------------------------
+def test_bv_already_bumped_deep2(basic, tmpdir, already_setup):
+    """
+    If 'version.py' is already bumped, don't update it
+    """
+    pytest.dbgfunc()
+    bf = pytest.basic_fx
+    v = tmpdir.join(pytest.this['target'])
+    with tbx.chdir(v.dirname):
+        pre = tbx.contents(v.basename)
+        with pytest.raises(SystemExit) as e:
+            gitr.gitr_bv({'bv': True, '<path>': None})
+        post = tbx.contents(v.basename)
+    assert bf['already'].format(pytest.this['target']) in str(e)
+    assert pre == post
+
+
+# -----------------------------------------------------------------------------
 def test_bv_already_bumped_explicit(basic, tmpdir, already_setup):
     """
     If an explicit target is already bumped, don't update it
@@ -1042,6 +1059,7 @@ def already_setup(tmpdir, request):
               'test_bv_already_bumped_default': 'version.py',
               'test_bv_already_bumped_explicit': 'frobnicate',
               'test_bv_already_bumped_deep': 'sub1/sub2/version.py',
+              'test_bv_already_bumped_deep2': 'sub1/sub2/version.py',
               }[rname]
     pytest.this['target'] = target
     t = tmpdir.join(target)
