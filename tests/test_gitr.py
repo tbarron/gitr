@@ -188,6 +188,7 @@ def test_bv_already_bumped_deep(basic, tmpdir, already_setup):
     """
     If 'version.py' is already bumped, don't update it
     """
+    pytest.dbgfunc()
     bf = pytest.basic_fx
     v = pytest.this['target']
     with tbx.chdir(tmpdir.strpath):
@@ -1064,7 +1065,7 @@ def basic(request):
     """
     stuff most tests can use
     """
-    pytest.dbgfunc()
+    # pytest.dbgfunc()
     b = pytest.basic_fx = {}
     b['already'] = '{0} is already bumped'
     b['defname'] = 'version.py'
@@ -1158,7 +1159,7 @@ def docopt_exp(**kw):
 # -----------------------------------------------------------------------------
 @pytest.fixture
 def repo_setup(tmpdir):
-    pytest.dbgfunc()
+    # pytest.dbgfunc()
     pytest.this = {}
     # the git repo
     r = pytest.this['repo'] = git.Repo.init(tmpdir.strpath)
