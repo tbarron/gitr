@@ -155,7 +155,7 @@ def gitr_bv(opts):
     ov = version_increment(iv, opts)
     version_update(target, ov, iv)
     if not opts.get('-q', False) and not opts.get('--quiet', False):
-        version_diff(repo, target)
+        version_diff(repo, repo_rel_target)
 
 
 # -----------------------------------------------------------------------------
