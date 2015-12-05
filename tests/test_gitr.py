@@ -608,6 +608,30 @@ def test_bv_file_build_4(basic, tmpdir, capsys, repo_setup):
 
 
 # -----------------------------------------------------------------------------
+def test_bv_file_build_4_deep(basic, tmpdir, capsys, repo_setup):
+    """
+    pre: '1.2.3.4' in foo/bar/version.py
+    gitr bv --build
+    post: '1.2.3.5' in foo/bar/version.py
+    """
+    pytest.dbgfunc()
+    bf = pytest.basic_fx
+    r = pytest.this['repo']
+    pytest.this['vname'].remove()
+    vp = 'foo/bar/version.py'
+    v = pytest.this['q'][vp]
+    pre, post = "1.2.3.4", "1.2.3.5"
+    t = pytest.this['template']
+    v['locpath'].write(t.format(pre))
+    r.git.commit(a=True, m='first version')
+    # with tbx.chdir(tmpdir.strpath):
+    with tbx.chdir(v['locpath'].dirname):
+        gitr.gitr_bv({'bv': True, '--build': True})
+        bv_verify_diff(t, pre, post,
+                       capsys.readouterr())
+
+
+# -----------------------------------------------------------------------------
 def test_bv_major_minor(basic, tmpdir, repo_setup):
     """
     pre: nothing
