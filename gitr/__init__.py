@@ -129,10 +129,13 @@ def gitr_bv(opts):
             target = tl[0]
 
     try:
-        repo = git.Repo(find_repo_root())
-        s = repo.git.status(target, porc=True)
+        repo_root = find_repo_root()
+        repo = git.Repo(repo_root)
+        # compute the target path relative to the repo root
+        repo_rel_target = os.path.relpath(os.path.abspath(target), repo_root)
+        s = repo.git.status(repo_rel_target, porc=True)
         if s.strip() != '':
-            sys.exit('{0} is already bumped'.format(target))
+            sys.exit('{0} is already bumped'.format(repo_rel_target))
     except git.InvalidGitRepositoryError:
         sys.exit('{0} is not in a git repo'.format(target))
 
