@@ -94,17 +94,67 @@ def gitr_bv(opts):
 
     If multiple matches are found, only the first is updated
     """
-    for a, b in [('--major', '--minor'),
-                 ('--major', '--patch'),
-                 ('--major', '--build'),
-                 ('--minor', '--patch'),
-                 ('--minor', '--build'),
-                 ('--patch', '--build'),
-                 ]:
-        if opts.get(a, False) and opts.get(b, False):
-            sys.exit('{0} and {1} are mutually exclusive'.format(a, b))
+    gbv_mutually_exclusive_options(opts)
 
-    tl = []
+    target = gbv_identify_target(opts)
+
+    repo, repo_rel_target = gbv_target_rel_path(target)
+
+    vers = gbv_get_version(target)
+
+    # update the version
+    prev_l = vers.split('.')
+    post_l = version_increment(prev_l, opts)
+    version_update(target, post_l, prev_l)
+    if not opts.get('-q', False) and not opts.get('--quiet', False):
+        version_diff(repo, repo_rel_target)
+
+
+# -----------------------------------------------------------------------------
+def gbv_get_version(target):
+    """
+    Parse the version from the *target* file
+    """
+    with open(target, 'r') as rable:
+        content = rable.read()
+    res = re.findall(r'(\d+\.\d+\.\d+\.?\w*)', content)
+    try:
+        vers = res[0]
+    except NameError:
+        sys.exit("No version found in {0} ['{1}']".format(target,
+                                                          content))
+    except IndexError:
+        sys.exit("No version found in {0} ['{1}']".format(target,
+                                                          content))
+    return vers
+
+
+# -----------------------------------------------------------------------------
+def gbv_target_rel_path(target):
+    """
+    Compute the relative path of *target* from the repo root
+    Return the repo object and relative path
+    """
+    try:
+        repo_root = find_repo_root()
+        repo = git.Repo(repo_root)
+        # compute the target path relative to the repo root
+        repo_rel_target = os.path.relpath(os.path.abspath(target), repo_root)
+        status = repo.git.status(repo_rel_target, porc=True)
+        if status.strip() != '':
+            sys.exit('{0} is already bumped'.format(repo_rel_target))
+    except git.InvalidGitRepositoryError:
+        sys.exit('{0} is not in a git repo'.format(target))
+    return repo, repo_rel_target
+
+
+# -----------------------------------------------------------------------------
+def gbv_identify_target(opts):
+    """
+    Figure out what our target file is. The default is 'version.py' but the
+    user may specify something else in *opts*.
+    """
+    targl = []
     target = opts.get('<path>', 'version.py') or 'version.py'
     if not os.path.exists(target):
         if '/' in target:
@@ -118,41 +168,29 @@ def gitr_bv(opts):
                 msg = "{0} is not in git -- no diff available".format(target)
             sys.exit(msg)
         else:
-            for r,d,f in os.walk('.'):
-                if target in f:
-                    tl.append(os.path.join(r, target))
-            if tl == []:
+            for root, _, flist in os.walk('.'):
+                if target in flist:
+                    targl.append(os.path.join(root, target))
+            if targl == []:
                 sys.exit('{0} not found'.format(target))
-            target = tl[0]
+            target = targl[0]
+    return target
 
-    try:
-        repo_root = find_repo_root()
-        repo = git.Repo(repo_root)
-        # compute the target path relative to the repo root
-        repo_rel_target = os.path.relpath(os.path.abspath(target), repo_root)
-        s = repo.git.status(repo_rel_target, porc=True)
-        if s.strip() != '':
-            sys.exit('{0} is already bumped'.format(repo_rel_target))
-    except git.InvalidGitRepositoryError:
-        sys.exit('{0} is not in a git repo'.format(target))
 
-    with open(target, 'r') as f:
-        content = f.read()
-    q = re.findall(r'(\d+\.\d+\.\d+\.?\w*)', content)
-    try:
-        v = q[0]
-    except NameError:
-        sys.exit("No version found in {0} ['{1}']".format(target,
-                                                        content))
-    except IndexError:
-        sys.exit("No version found in {0} ['{1}']".format(target,
-                                                        content))
-
-    iv = v.split('.')
-    ov = version_increment(iv, opts)
-    version_update(target, ov, iv)
-    if not opts.get('-q', False) and not opts.get('--quiet', False):
-        version_diff(repo, repo_rel_target)
+# -----------------------------------------------------------------------------
+def gbv_mutually_exclusive_options(opts):
+    """
+    Scan *opts* for combinations of mutually exclusive options for gitr_bv
+    """
+    for this, that in [('--major', '--minor'),
+                       ('--major', '--patch'),
+                       ('--major', '--build'),
+                       ('--minor', '--patch'),
+                       ('--minor', '--build'),
+                       ('--patch', '--build'),
+                      ]:
+        if opts.get(this, False) and opts.get(that, False):
+            sys.exit('{0} and {1} are mutually exclusive'.format(this, that))
 
 
 # -----------------------------------------------------------------------------
