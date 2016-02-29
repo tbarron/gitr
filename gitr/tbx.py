@@ -34,41 +34,41 @@ def tmpenv(**kw):
     Set one or more environment variables that will return to their previous
     setting when the context goes out of scope.
     """
-    a = {}
+    prev = {}
     try:
-        for n in kw:
-            if n in os.environ:
-                a[n] = os.environ[n]
-            if kw[n] is None:
-                del os.environ[n]
+        for k in kw:
+            if k in os.environ:
+                prev[k] = os.environ[k]
+            if kw[k] is None:
+                del os.environ[k]
             else:
-                os.environ[n] = kw[n]
+                os.environ[k] = kw[k]
         yield
     finally:
-        for n in kw:
-            if n in a:
-                os.environ[n] = a[n]
-            elif n in os.environ:
-                del os.environ[n]
+        for k in kw:
+            if k in prev:
+                os.environ[k] = prev[k]
+            elif k in os.environ:
+                del os.environ[k]
 
 
 # -----------------------------------------------------------------------------
-def contents(path, type=None, default=None):
+def contents(path, rtype=None, default=None):
     """
-    Return the contents of file *path* as *type* (string [default], or list)
+    Return the contents of file *path* as *rtype* (string [default], or list)
     """
     try:
-        with open(path, 'r') as f:
-            if type == list:
-                rv = f.readlines()
+        with open(path, 'r') as rable:
+            if rtype == 'list':
+                rval = rable.readlines()
             else:
-                rv = f.read()
-    except IOError as e:
+                rval = rable.read()
+    except IOError:
         if default is not None:
-            rv = default
+            rval = default
         else:
             raise
-    return rv
+    return rval
 
 
 # -----------------------------------------------------------------------------
@@ -89,34 +89,34 @@ def revnumerate(seq):
     want the list changing out from under us as we work on it, so we scan a
     copy rather than the origin sequence.
     """
-    n = len(seq) - 1
+    j = len(seq) - 1
     seqcopy = copy.deepcopy(seq)
     for elem in reversed(seqcopy):
-        yield n, elem
-        n -= 1
+        yield j, elem
+        j -= 1
 
 
 # -----------------------------------------------------------------------------
-def run(cmd, input=None):
+def run(cmd, inps=None):
     """
     Run *cmd*, optionally passing string *input* to it on stdin, and return
     what the process writes to stdout
     """
     try:
-        p = subprocess.Popen(shlex.split(cmd),
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        if input:
-            p.stdin.write(input)
-        (o, e) = p.communicate()
-        if p.returncode == 0:
-            rval = o
+        proc = subprocess.Popen(shlex.split(cmd),
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        if inps:
+            proc.stdin.write(inps)
+        (stdo, stde) = proc.communicate()
+        if proc.returncode == 0:
+            rval = stdo
         else:
-            rval = 'ERR:' + e
-    except OSError as e:
-        if 'No such file or directory' in str(e):
-            rval = 'ERR:' + str(e)
+            rval = 'ERR:' + stde
+    except OSError as err:
+        if 'No such file or directory' in str(err):
+            rval = 'ERR:' + str(err)
         else:
             raise
 

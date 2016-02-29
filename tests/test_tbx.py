@@ -83,7 +83,7 @@ def test_contents_list(tmpdir, contents_setup):
     """
     pytest.dbgfunc()
     pt = pytest.this
-    c = tbx.contents(pt['tfn'].strpath, type=list)
+    c = tbx.contents(pt['tfn'].strpath, rtype='list')
     assert c == [x + '\n' for x in pt['td']]
 
 

@@ -65,26 +65,26 @@ __version__ = version.__version__
 def main():
     """Entrypoint
     """
-    o = docopt.docopt(sys.modules[__name__].__doc__)
-    if o['--debug']:
+    opts = docopt.docopt(sys.modules[__name__].__doc__)
+    if opts['--debug']:
         pdb.set_trace()
 
-    if o['--version']:
+    if opts['--version']:
         sys.exit(version.__version__)
 
-    dispatch(o)
+    dispatch(opts)
 
 
 # -----------------------------------------------------------------------------
-def dispatch(o):
+def dispatch(opts):
     """
     Based on the contents of *opts*, figure out what to do, introspect the
     module, and call the appropriate function.
     """
-    targl = [_ for _ in o if _[0] not in ['-', '<'] and o[_]]
+    targl = [_ for _ in opts if _[0] not in ['-', '<'] and opts[_]]
     funcname = '_'.join(['gitr', targl[0]])
     func = getattr(sys.modules[__name__], funcname)
-    func(o)
+    func(opts)
 
 
 # -----------------------------------------------------------------------------
@@ -107,9 +107,9 @@ def gitr_bv(opts):
     target = opts.get('<path>', 'version.py') or 'version.py'
     if not os.path.exists(target):
         if '/' in target:
-            td = tbx.dirname(target)
-            if not os.path.exists(td):
-                os.makedirs(td)
+            tdir = tbx.dirname(target)
+            if not os.path.exists(tdir):
+                os.makedirs(tdir)
             version_update(target, ['0', '0', '0'])
             if opts.get('-q', False) or opts.get('--quiet', False):
                 msg = ""
@@ -213,34 +213,33 @@ def version_diff(repo, target):
 
 
 # -----------------------------------------------------------------------------
-def version_increment(iv, opts):
+def version_increment(prev_l, opts):
     """
-    Given a version array in *p*, return the incremented value.
+    Given a version array in *prev_l*, return the incremented value.
     """
-    def strinc(sn):
+    def strinc(num_s):
         """
         Increment a numeric string or blow up
         """
-        return str(int(sn) + 1)
+        return str(int(num_s) + 1)
 
-    ov = []
+    post_l = []
     if opts.get('--major', False):
-        ov = [strinc(iv[0]), '0', '0']
-        ov_final = '.'.join(ov)
+        post_l = [strinc(prev_l[0]), '0', '0']
     elif opts.get('--minor', False):
-        ov = [iv[0], strinc(iv[1]), '0']
+        post_l = [prev_l[0], strinc(prev_l[1]), '0']
     elif opts.get('--patch', False):
-        ov = [iv[0], iv[1], strinc(iv[2])]
+        post_l = [prev_l[0], prev_l[1], strinc(prev_l[2])]
     else:
-        ov = iv[:]
-        if 3 == len(ov):
-            ov.append('1')
-        elif 4 == len(ov):
-            ov = iv[0:3] + [strinc(iv[3])]
+        post_l = prev_l[:]
+        if 3 == len(post_l):
+            post_l.append('1')
+        elif 4 == len(post_l):
+            post_l = prev_l[0:3] + [strinc(prev_l[3])]
         else:
-            v = '.'.join(ov)
-            sys.exit("'{0}' is not a recognized version format".format(v))
-    return ov
+            vers = '.'.join(post_l)
+            sys.exit("'{0}' is not a recognized version format".format(vers))
+    return post_l
 
 
 # -----------------------------------------------------------------------------
@@ -256,19 +255,22 @@ def version_update(target, new, old=None):
     If target is not empty and old and is not found, fail and complain.
     """
     news = '.'.join(new)
-    c = tbx.contents(target, default='')
-    with open(target, 'w') as f:
+    res = tbx.contents(target, default='')
+    with open(target, 'w') as wable:
         if not old:
-            if not c:
-                f.write("__version__ = '{0}'\n".format(news))
+            if not res:
+                wable.writelines(['"""\n',
+                                  'Version\n',
+                                  '"""\n',
+                                  "__version__ = '{0}'\n".format(news)])
             else:
                 sys.exit("Don't know where to put '{0}' in '{1}'".format(news,
-                                                                         c))
+                                                                         res))
         else:
             olds = '.'.join(old)
-            if not c:
+            if not res:
                 sys.exit("Can't update '{0}' in an empty file".format(olds))
-            elif olds in c:
-                f.write(c.replace(olds, news))
+            elif olds in res:
+                wable.write(res.replace(olds, news))
             else:
-                sys.exit("'{0}' not found in '{1}'".format(olds, c))
+                sys.exit("'{0}' not found in '{1}'".format(olds, res))
