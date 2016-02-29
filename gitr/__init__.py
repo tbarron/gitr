@@ -47,12 +47,13 @@ Arguments
     <target>         which file to examine for conflicts
 """
 
-import docopt
-import git
 import os
 import pdb
 import re
 import sys
+
+import docopt
+import git
 
 import tbx
 import version
