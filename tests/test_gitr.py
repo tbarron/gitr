@@ -967,7 +967,7 @@ def test_vu_on_tmt(tmpdir):
     v = '9.8.7'
     with tbx.chdir(tmpdir.strpath):
         gitr.version_update(trg.strpath, v.split('.'))
-    assert tbx.contents(trg.strpath) == "__version__ = '{0}'\n".format(v)
+    assert "__version__ = '{0}'\n".format(v) in tbx.contents(trg.strpath)
 
 
 # -----------------------------------------------------------------------------
@@ -981,7 +981,7 @@ def test_vu_on_tns(tmpdir):
     v = '9.8.7'
     with tbx.chdir(tmpdir.strpath):
         gitr.version_update(trg.strpath, v.split('.'))
-    assert tbx.contents(trg.strpath) == "__version__ = '{0}'\n".format(v)
+    assert "__version__ = '{0}'\n".format(v) in tbx.contents(trg.strpath)
 
 
 # -----------------------------------------------------------------------------
