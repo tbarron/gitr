@@ -77,6 +77,10 @@ def main():
 
 # -----------------------------------------------------------------------------
 def dispatch(o):
+    """
+    Based on the contents of *opts*, figure out what to do, introspect the
+    module, and call the appropriate function.
+    """
     targl = [_ for _ in o if _[0] not in ['-', '<'] and o[_]]
     funcname = '_'.join(['gitr', targl[0]])
     func = getattr(sys.modules[__name__], funcname)

@@ -1,3 +1,6 @@
+"""
+Toolbox utilities
+"""
 import contextlib
 import copy
 import os
@@ -6,14 +9,15 @@ import subprocess
 
 
 # -----------------------------------------------------------------------------
-# This allows for doing things like
-#      orig = os.getcwd()
-#      with chdir('/somewhere/else'):
-#           ... do stuff ...
-#      assert orig == os.getcwd()
-#
 @contextlib.contextmanager
 def chdir(target):
+    """
+    This allows for doing things like
+        orig = os.getcwd()
+        with chdir('/somewhere/else'):
+            ... do stuff ...
+        assert orig == os.getcwd()
+    """
     try:
         start = os.getcwd()
         os.chdir(target)
@@ -26,6 +30,10 @@ def chdir(target):
 # -----------------------------------------------------------------------------
 @contextlib.contextmanager
 def tmpenv(**kw):
+    """
+    Set one or more environment variables that will return to their previous
+    setting when the context goes out of scope.
+    """
     a = {}
     try:
         for n in kw:
