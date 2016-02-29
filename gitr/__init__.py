@@ -16,28 +16,20 @@ Commands:
         between the one in question and the present as well as the age of the
         target committish)
 
-    gitr dupl - will find and report any duplicate functions in the current
-        tree in .py files
-
     gitr flix - will find and report conflicts
 
     gitr hook - will list available hooks (--list), install and link a hook
         (--add), show a list of installed hooks (--show), and remove hooks
         (--rm)
 
-    gitr nodoc - will find and report any functions in the current tree in .py
-        files that have no docstring
-
 Usage:
     gitr (-h|--help|--version)
     gitr bv [(-d|--debug)] [(-q|--quiet)] [(--major|--minor|--patch|--build)] [<path>]
     gitr depth [(-d|--debug)] <commitish>
     gitr dunn [(-d|--debug)]
-    gitr dupl [(-d|--debug)]
     gitr flix [(-d|--debug)] [<target>]
     gitr hook [(-d|--debug)] (--list|--show)
     gitr hook [(-d|--debug)] (--add|--rm) <hookname>
-    gitr nodoc [(-d|--debug)]
 
 Options:
     -h --help        Provide help info (display this document)
@@ -176,13 +168,6 @@ def gitr_dunn(opts):
 
 
 # -----------------------------------------------------------------------------
-def gitr_dupl(opts):
-    """Report duplicate function names
-    """
-    print("Coming soon: duplicate function detector")
-
-
-# -----------------------------------------------------------------------------
 def gitr_flix(opts):
     """Report conflicts
     """
@@ -194,13 +179,6 @@ def gitr_hook(opts):
     """Manage git hooks
     """
     print("Coming soon: hook management")
-
-
-# -----------------------------------------------------------------------------
-def gitr_nodoc(opts):
-    """Report functions with no docstring
-    """
-    print("Coming soon: find and report functions with no docstring")
 
 
 # -----------------------------------------------------------------------------

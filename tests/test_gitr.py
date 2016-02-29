@@ -758,8 +758,6 @@ def test_docopt_help(capsys):
                                   {"bv": True, "--version": True},
                                   {"flix": True, "--minor": True,
                                    "<hookname>": 'summer'},
-                                  {"nodoc": True, "--version": True},
-                                  {"dupl": True, "--version": True},
                                   ))
 def test_docopt_raises(argd, capsys):
     """
@@ -791,10 +789,6 @@ def test_docopt_raises(argd, capsys):
                                   {'flix': True, '-d': True,
                                    '<target>': 'foobar'},
                                   {'flix': True, '-d': True,},
-                                  {'nodoc': True, "--debug": True},
-                                  {'nodoc': True,},
-                                  {'dupl': True, "--debug": True},
-                                  {'dupl': True,},
                                   ))
 def test_docopt(argd, capsys):
     """
@@ -839,10 +833,8 @@ def test_find_repo_root_shallow(repo_setup, tmpdir):
 # -----------------------------------------------------------------------------
 @pytest.mark.parametrize('subc', ['dunn',
                                   'depth',
-                                  'dupl',
                                   'flix',
                                   'hook',
-                                  'nodoc',
                                   ])
 def test_gitr_unimpl(subc, capsys):
     """
@@ -1178,7 +1170,6 @@ def docopt_exp(**kw):
           'flix': False,
           '<path>': None,
           '<target>': None,
-          'nodoc': False,
           'dunn': False,
           'depth': False,
           '<commitish>': None,
@@ -1189,7 +1180,6 @@ def docopt_exp(**kw):
           '--list': False,
           '--show': False,
           '--rm': False,
-          'dupl': False
           }
     for k in kw:
         kp = '--debug' if k == '-d' else k
