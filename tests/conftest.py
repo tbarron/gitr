@@ -1,8 +1,13 @@
-import contextlib
+"""
+py.test configuration
+"""
+
 import os
 import pdb
-import pytest
 import sys
+
+
+import pytest
 
 
 # -----------------------------------------------------------------------------

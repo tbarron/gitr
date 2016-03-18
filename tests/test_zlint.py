@@ -1,3 +1,6 @@
+"""
+Run pylint
+"""
 import pexpect
 
 def test_pylint():

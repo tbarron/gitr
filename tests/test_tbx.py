@@ -1,6 +1,11 @@
+"""
+Toolbox
+"""
+# pylint: disable=locally-disabled,unused-argument
 import os
-import pytest
 import re
+
+import pytest
 
 from gitr import tbx
 
@@ -24,10 +29,10 @@ def test_chdir_nosuch(tmpdir):
     pytest.dbgfunc()
     here = os.getcwd()
     badtarg = tmpdir.join('nosuch')
-    with pytest.raises(OSError) as e:
+    with pytest.raises(OSError) as err:
         with tbx.chdir(badtarg.strpath):
             assert os.getcwd() == tmpdir.strpath
-    assert 'No such file or directory' in str(e)
+    assert 'No such file or directory' in str(err)
     assert os.getcwd() == here
 
 
@@ -39,10 +44,10 @@ def test_chdir_isfile(tmpdir):
     pytest.dbgfunc()
     here = os.getcwd()
     thisfile = tmpdir.join('thisfile').ensure()
-    with pytest.raises(OSError) as e:
+    with pytest.raises(OSError) as err:
         with tbx.chdir(thisfile.strpath):
             assert os.getcwd() == thisfile.strpath
-    assert 'Not a directory' in str(e)
+    assert 'Not a directory' in str(err)
     assert os.getcwd() == here
 
 
@@ -55,70 +60,59 @@ def test_chdir_perm(tmpdir):
     here = os.getcwd()
     thisdir = tmpdir.join('thisdir').ensure(dir=True)
     thisdir.chmod(0000)
-    with pytest.raises(OSError) as e:
+    with pytest.raises(OSError) as err:
         with tbx.chdir(thisdir.strpath):
-            assert os.getcwd() == thisfile.strpath
-    assert 'Permission denied' in str(e)
+            assert os.getcwd() == thisdir.strpath
+    assert 'Permission denied' in str(err)
     thisdir.chmod(0755)
     assert os.getcwd() == here
 
 
 # -----------------------------------------------------------------------------
-@pytest.fixture
-def contents_setup(tmpdir):
-    """
-    set up data for test
-    """
-    pytest.dbgfunc()
-    pytest.this = {}
-    td = pytest.this['td'] = ["one", "two", "three", "four", "five"]
-    tfn = pytest.this['tfn'] = tmpdir.join("testthis")
-    tfn.write(''.join([x+"\n" for x in td]))
-
-
-# -----------------------------------------------------------------------------
-def test_contents_list(tmpdir, contents_setup):
+# pylint: disable=locally-disabled,redefined-outer-name
+def test_contents_list(tmpdir, contents_fixture):
     """
     Test getting the contents of a file
     """
     pytest.dbgfunc()
-    pt = pytest.this
-    c = tbx.contents(pt['tfn'].strpath, rtype='list')
-    assert c == [x + '\n' for x in pt['td']]
+    this = pytest.this
+    result = tbx.contents(this['tfn'].strpath, rtype='list')
+    assert result == [x + '\n' for x in this['td']]
 
 
 # -----------------------------------------------------------------------------
-def test_contents_str(tmpdir):
+def test_contents_str(tmpdir, contents_fixture):
     """
     Test getting the contents of a file
     """
     pytest.dbgfunc()
-    pt = pytest.this
-    c = tbx.contents(pt['tfn'].strpath)
-    assert c == ''.join([x + '\n' for x in pt['td']])
+    this = pytest.this
+    result = tbx.contents(this['tfn'].strpath)
+    assert result == ''.join([x + '\n' for x in this['td']])
 
 
 # -----------------------------------------------------------------------------
-def test_contents_fail(tmpdir):
+def test_contents_fail(tmpdir, contents_fixture):
     """
     Test getting the contents of a file
     """
     pytest.dbgfunc()
-    pt = pytest.this
-    with pytest.raises(IOError) as e:
-        c = tbx.contents(pt['tfn'].strpath + "_nonesuch")
-    assert "No such file or directory" in str(e)
+    this = pytest.this
+    with pytest.raises(IOError) as err:
+        dummy = tbx.contents(this['tfn'].strpath + "_nonesuch")
+    assert "No such file or directory" in str(err)
 
 
 # -----------------------------------------------------------------------------
-def test_contents_default(tmpdir):
+def test_contents_default(tmpdir, contents_fixture):
     """
     Test getting the contents of a file
     """
     pytest.dbgfunc()
-    pt = pytest.this
-    c = tbx.contents(pt['tfn'].strpath + "_nonesuch", default="take this instead")
-    assert "take this instead" in c
+    this = pytest.this
+    result = tbx.contents(this['tfn'].strpath + "_nonesuch",
+                          default="take this instead")
+    assert "take this instead" in result
 
 
 # -----------------------------------------------------------------------------
@@ -127,12 +121,12 @@ def test_revnumerate():
     Test reverse enumerating a list
     """
     pytest.dbgfunc()
-    td = ['monday', 'tuesday', 'wednesday', 'thursday',
-          'friday', 'saturday', 'sunday']
-    tdr = td[:]
-    tdr.reverse()
-    for n, v in tbx.revnumerate(td):
-        assert v == td[n]
+    weekdays = ['monday', 'tuesday', 'wednesday', 'thursday',
+                'friday', 'saturday', 'sunday']
+    wd_copy = weekdays[:]
+    wd_copy.reverse()
+    for i, k in tbx.revnumerate(weekdays):
+        assert k == weekdays[i]
 
 
 # -----------------------------------------------------------------------------
@@ -141,9 +135,9 @@ def test_run_stdout():
     Run a process and capture stdout
     """
     pytest.dbgfunc()
-    r = tbx.run('python -c "import this"')
-    assert "Zen of Python" in r
-    assert "Namespaces" in r
+    result = tbx.run('python -c "import this"')
+    assert "Zen of Python" in result
+    assert "Namespaces" in result
 
 
 # -----------------------------------------------------------------------------
@@ -152,9 +146,9 @@ def test_run_stderr():
     Run a process and capture stdout
     """
     pytest.dbgfunc()
-    r = tbx.run("ls --nosuch")
-    assert "ERR:" in r
-    assert re.findall("(illegal|unrecognized) option", r)
+    result = tbx.run("ls --nosuch")
+    assert "ERR:" in result
+    assert re.findall("(illegal|unrecognized) option", result)
 
 
 # -----------------------------------------------------------------------------
@@ -163,9 +157,9 @@ def test_run_fail():
     Run a binary that doesn't exist
     """
     pytest.dbgfunc()
-    r = tbx.run("nosuchbinary")
-    assert "ERR:" in r
-    assert "No such file or directory" in r
+    result = tbx.run("nosuchbinary")
+    assert "ERR:" in result
+    assert "No such file or directory" in result
 
 
 # -----------------------------------------------------------------------------
@@ -177,13 +171,12 @@ def test_tmpenv_present():
     post: $TMPENV == 'pre test value'
     """
     pytest.dbgfunc()
-    v, pre, inside = 'TMPENV', 'pre test value', 'some other value'
-    os.environ[v] = pre
+    vname, pre, inside = 'TMPENV', 'pre test value', 'some other value'
+    os.environ[vname] = pre
     with tbx.tmpenv(TMPENV=inside):
-        assert inside == os.getenv(v)
-    assert pre == os.getenv(v)
-    del os.environ[v]
-    # pytest.fail('construction')
+        assert inside == os.getenv(vname)
+    assert pre == os.getenv(vname)
+    del os.environ[vname]
 
 
 # -----------------------------------------------------------------------------
@@ -195,12 +188,12 @@ def test_tmpenv_absent():
     post: 'TMPENV' not in os.environ
     """
     pytest.dbgfunc()
-    v, inside = 'TMPENV', 'something'
-    if v in os.environ:
-        del os.environ[v]
+    vname, inside = 'TMPENV', 'something'
+    if vname in os.environ:
+        del os.environ[vname]
     with tbx.tmpenv(TMPENV=inside):
-        assert inside == os.getenv(v)
-    assert v not in os.environ
+        assert inside == os.getenv(vname)
+    assert vname not in os.environ
 
 
 # -----------------------------------------------------------------------------
@@ -212,12 +205,12 @@ def test_tmpenv_unset():
     post: $TMPENV == 'pre test value'
     """
     pytest.dbgfunc()
-    v, pre = 'TMPENV', 'pre test value'
-    os.environ[v] = pre
+    vname, pre = 'TMPENV', 'pre test value'
+    os.environ[vname] = pre
     with tbx.tmpenv(TMPENV=None):
-        assert v not in os.environ
-    assert pre == os.getenv(v)
-    del os.environ[v]
+        assert vname not in os.environ
+    assert pre == os.getenv(vname)
+    del os.environ[vname]
 
 
 # -----------------------------------------------------------------------------
@@ -230,15 +223,16 @@ def test_tmpenv_mult():
     post: $TMPENV == 'pre test value', OTHER undefined
     """
     pytest.dbgfunc()
-    v, o, pre, i1, i2 = 'TMPENV', 'TMPENV_OTHER', 'some value', 'good', 'best'
-    os.environ[o] = pre
-    if v in os.environ:
-        del os.environ[v]
-    with tbx.tmpenv(TMPENV=i1, TMPENV_OTHER=i2):
-        assert i1 == os.getenv(v)
-        assert i2 == os.getenv(o)
-    assert pre == os.getenv(o)
-    assert v not in os.environ
+    vname, oth, pre, = 'TMPENV', 'TMPENV_OTHER', 'some value'
+    tmp1, tmp2 = 'good', 'best'
+    os.environ[oth] = pre
+    if vname in os.environ:
+        del os.environ[vname]
+    with tbx.tmpenv(TMPENV=tmp1, TMPENV_OTHER=tmp2):
+        assert tmp1 == os.getenv(vname)
+        assert tmp2 == os.getenv(oth)
+    assert pre == os.getenv(oth)
+    assert vname not in os.environ
 
 
 # -----------------------------------------------------------------------------
@@ -251,11 +245,26 @@ def test_tmpenv_exception():
     post: $TMPENV == 'some value'
     """
     pytest.dbgfunc()
-    v, pre, dur = 'TMPENV', 'some value', 'good'
-    os.environ[v] = pre
+    vname, pre, dur = 'TMPENV', 'some value', 'good'
+    os.environ[vname] = pre
     with pytest.raises(StandardError):
         with tbx.tmpenv(TMPENV=dur):
-            assert dur == os.getenv(v)
+            assert dur == os.getenv(vname)
             raise StandardError('some random exception')
-    assert pre == os.getenv(v)
-    del os.environ[v]
+    assert pre == os.getenv(vname)
+    del os.environ[vname]
+
+
+# -----------------------------------------------------------------------------
+@pytest.fixture
+def contents_fixture(tmpdir):
+    """
+    set up data for test
+    """
+    pytest.dbgfunc()
+    pytest.this = {}
+    testdata = pytest.this['td'] = ["one", "two", "three", "four", "five"]
+    tfn = pytest.this['tfn'] = tmpdir.join("testthis")
+    tfn.write(''.join([x+"\n" for x in testdata]))
+
+

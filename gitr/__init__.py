@@ -194,14 +194,14 @@ def gbv_mutually_exclusive_options(opts):
 
 
 # -----------------------------------------------------------------------------
-def gitr_depth(opts):
+def gitr_depth(dummy):
     """Report the number of commits back to a given one and its age
     """
     print("Coming soon: report the number steps back to a given commit")
 
 
 # -----------------------------------------------------------------------------
-def gitr_dunn(opts):
+def gitr_dunn(dummy):
     """Suggest the next step based on the state of the repository
     """
     print("Git'r Dunn: I dunno, maybe do a commit?")
@@ -211,14 +211,14 @@ def gitr_dunn(opts):
 
 
 # -----------------------------------------------------------------------------
-def gitr_flix(opts):
+def gitr_flix(dummy):
     """Report conflicts
     """
     print("Coming soon: conflict reporter")
 
 
 # -----------------------------------------------------------------------------
-def gitr_hook(opts):
+def gitr_hook(dummy):
     """Manage git hooks
     """
     print("Coming soon: hook management")
