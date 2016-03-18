@@ -1140,11 +1140,18 @@ def docopt_subcl():
 def docopt_cmdl(argd):
     """
     Given a set of arguments, construct a command line
+
+    If argd[k] is truish but not True, it's an option with an argument ('--foo
+    <bar>') and we want to add that to the command line. If it's exactly True,
+    we want to just add the option flag to the command line ('--foo').
+
+    We could check isinstance(argd[k], bool) and argd[k] but it's simpler to
+    just explicitly compare argd[k] to True.
     """
     argl = []
     subcl = docopt_subcl()
     for k in argd:
-        if argd[k] == True:
+        if argd[k] is True:
             if k in subcl:
                 argl.insert(0, k)
             else:
