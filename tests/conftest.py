@@ -37,10 +37,6 @@ def pytest_runtest_setup(item):
     """
     Decide whether to skip a test before running it
     """
-    if item.cls is None:
-        fqn = '.'.join([item.module.__name__, item.name])
-    else:
-        fqn = '.'.join([item.module.__name__, item.cls.__name__, item.name])
     dbg_n = '..' + item.name
     dbg_l = item.config.getvalue('dbg')
     # skip_l = item.config.getvalue('skip')
@@ -53,14 +49,3 @@ def pytest_runtest_setup(item):
         pytest.dbgfunc = pdb.set_trace
     else:
         pytest.dbgfunc = lambda: None
-
-
-# -----------------------------------------------------------------------------
-@contextlib.contextmanager
-def chdir(target):
-    start = os.getcwd()
-    os.chdir(target)
-
-    yield
-
-    os.chdir(start)
