@@ -20,6 +20,8 @@ def pytest_addoption(parser):
                      help="start debugger on named test or all")
     parser.addoption("--all", action="store_true", default=False,
                      help="suppress -x, run all tests")
+    parser.addoption("--skip", action="append", default=[],
+                     help="skip named test(s)")
     sys.path.append(os.getcwd())
 
 
@@ -39,7 +41,11 @@ def pytest_runtest_setup(item):
     """
     dbg_n = '..' + item.name
     dbg_l = item.config.getvalue('dbg')
-    # skip_l = item.config.getvalue('skip')
+    skip_l = item.config.getvalue('skip')
+    if any([item.name in skip_l,
+            any([x in item.name for x in skip_l])]):
+        pytest.skip('Skipping at user request')
+
     if dbg_n in dbg_l or '..all' in dbg_l:
         pdb.set_trace()
 
