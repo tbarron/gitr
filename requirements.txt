@@ -1,4 +1,5 @@
 docopt
 GitPython
 pexpect==3.3
+pylint
 pytest
